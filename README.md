@@ -1,2 +1,4 @@
-# ESP32P4_DSI_Display
-Boiler plate code for various Touch display panels from Waveshare, Luckfox, DFRobot and SeeedStudio
+## ! Work in Progress
+
+# ESP32P4 DSI Display
+Boilerplate code for various Touch display panels from Waveshare, Luckfox, DFRobot and SeeedStudio
