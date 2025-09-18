@@ -1,3 +1,25 @@
+# Ignore everything in the build directory
+build/*
+
+# But do not ignore these directories and files
+# Keep the bootloader.bin file
+!build/bootloader/
+build/bootloader/*
+!build/bootloader/bootloader.bin
+
+# Keep the partition-table.bin file
+!build/partition_table/
+build/partition_table/*
+!build/partition_table/partition-table.bin
+
+# Keep the other important binary files
+# !build/ota_data_initial.bin
+# !build/SP8_ESP32M_v1_7.bin
+# !build/storage.bin
+
+# Except .bin files (including those in subdirectories)
+!build/*.bin
+
 # Prerequisites
 *.d
 
@@ -50,6 +72,10 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+sdkconfig.old
 
-# debug information files
-*.dwo
+managed_components/
+dependencies/
+dependencies.lock
+# Ignore the .vscode directory
+.vscode/
