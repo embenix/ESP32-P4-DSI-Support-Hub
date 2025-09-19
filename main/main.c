@@ -1,7 +1,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "nvs_flash.h"
-#include "nvs.h"
+// #include "nvs_flash.h"
+// #include "nvs.h"
 #include "esp_log.h"
 #include "esp_err.h"
 #include "esp_check.h"
@@ -10,6 +10,7 @@
 #include "lv_demos.h"
 #include "driver/i2c.h"
 #include "esp_log.h"
+#include "init_lcd.h"
 
 
 #define I2C_PORT        I2C_NUM_0
@@ -89,6 +90,8 @@ void app_main(void)
     
     // i2c_init();
     // i2c_scan();
+
+    init_lcd();
 
     while(true) {
         //Add the touch data here

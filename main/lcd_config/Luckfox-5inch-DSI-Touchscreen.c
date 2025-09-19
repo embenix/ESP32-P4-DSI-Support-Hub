@@ -10,12 +10,16 @@
  * @link https://wiki.luckfox.com/Display/5inch-DSI-Touchscreen/ @endlink
  */
 
- // This file is included only if the Luckfox 5-inch DSI Touchscreen
- // is enabled in the project configuration.
+// This file is included only if the Luckfox 5-inch DSI Touchscreen
+// is enabled in the project configuration.
+#include "sdkconfig.h"
 #if CONFIG_LUCKFOX_5INCH_DSI_TOUCHSCREEN
 
-#ifndef LUCKFOX_5INCH_DSI_TOUCHSCREEN_H
-#define LUCKFOX_5INCH_DSI_TOUCHSCREEN_H
+#include <stdio.h>
+#include "esp_log.h"
+#include "init_lcd.h"
+
+const char *TAG = "Luckfox_5inch_DSI_Touchscreen";
 
 /* LCD color formats */
 #define ESP_LCD_COLOR_FORMAT_RGB565    (1)
@@ -45,7 +49,16 @@
         .flags.use_dma2d = true,                         \
     }
 
-#endif // LUCKFOX_5INCH_DSI_TOUCHSCREEN_H
+
+/**
+ * @brief Initialize the LCD
+ * 
+ */
+void init_lcd(void)
+{
+    // Initialize the LCD here
+    ESP_LOGI(TAG, "LCD initialized successfully.");
+}
 
 #endif // CONFIG_LUCKFOX_5INCH_DSI_TOUCHSCREEN
 // End of file Luckfox-5inch-DSI-Touchscreen.h
