@@ -1,0 +1,43 @@
+/**
+ * @file guition_esp32p4_devkit.h
+ * @author Yasir K. Qureshi (embenix.com)
+ * @brief Guition ESP32-P4-DevKit board support package
+ * @version 0.1
+ * @date 2025-09-20
+ * 
+ * @copyright Copyright (c) 2025
+ * 
+ */
+#pragma once
+
+#include "sdkconfig.h"
+
+#if CONFIG_GUITION_ESP32P4_DEVKIT
+
+#ifndef GUITION_ESP32P4_DEVKIT_H
+#define GUITION_ESP32P4_DEVKIT_H
+
+#include "esp_err.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define HW_BOARD            "GUITION_ESP32P4_DEVKIT"
+
+// I2C configuration for the board
+#define I2C_DSI_PORT        (I2C_NUM_1)
+#define I2C_SCL_GPIO        (8)
+#define I2C_SDA_GPIO        (7)
+#define I2C_FREQ_HZ         (100000)
+
+#define ESP_MIPI_DSI_PHY_PWR_LDO_CHAN       (3)  // LDO_VO3 is connected to VDD_MIPI_DPHY
+#define ESP_MIPI_DSI_PHY_PWR_LDO_VOLTAGE_MV (2500)
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // GUITION_ESP32P4_DEVKIT_H
+#endif // CONFIG_GUITION_ESP32P4_DEVKIT

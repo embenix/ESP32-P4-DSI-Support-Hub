@@ -1,0 +1,18 @@
+# Vendor: Guition ESP32-P4 Devkit
+# Sample SPI flash defaults
+CONFIG_SPI_FLASH_SUPPORT_BOYA_CHIP=y
+
+# Auto-detect flash size for flexibility
+# CONFIG_ESPTOOLPY_FLASHSIZE_DETECT=y
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="16MB"
+
+# Mode: start with dio unless QIO is confirmed on this module
+CONFIG_ESPTOOLPY_FLASHMODE="dio"
+
+# Frequency: start at 40MHz; increase to 80MHz if verified stable
+CONFIG_ESPTOOLPY_FLASHFREQ_40M=y
+CONFIG_ESPTOOLPY_FLASHFREQ="40m"
+# Alternative
+# CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+# CONFIG_ESPTOOLPY_FLASHFREQ="80m"

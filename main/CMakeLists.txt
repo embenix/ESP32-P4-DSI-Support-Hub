@@ -23,7 +23,8 @@ idf_component_register(
         "${HARDWARE_CONF_DIR}"
         "${LV_DEMO_DIR}"
     REQUIRES
-        lvgl__lvgl 
+        lvgl__lvgl driver
+    PRIV_REQUIRES esp_lcd usb spiffs fatfs
 )
 
 # Apply LVGL-related compile definitions to this component so demo sources see them

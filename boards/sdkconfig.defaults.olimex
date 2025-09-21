@@ -1,0 +1,18 @@
+# Vendor: Olimex ESP32-P4 Devkit
+# Sample SPI flash defaults (conservative)
+CONFIG_SPI_FLASH_SUPPORT_WINBOND_CHIP=y
+
+# Prefer auto-detect for size across variants
+# CONFIG_ESPTOOLPY_FLASHSIZE_DETECT=y
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="16MB"
+
+# Flash mode: some modules default to DIO; switch to QIO only if verified
+CONFIG_ESPTOOLPY_FLASHMODE="dio"
+
+# Frequency: use 40MHz for wider compatibility; bump to 80MHz if stable
+CONFIG_ESPTOOLPY_FLASHFREQ_40M=y
+CONFIG_ESPTOOLPY_FLASHFREQ="40m"
+# Alternative
+# CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+# CONFIG_ESPTOOLPY_FLASHFREQ="80m"

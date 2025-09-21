@@ -1,4 +1,5 @@
 #include "sdkconfig.h"
+#include "esp_err.h"
 #include "esp_log.h"
 #include "init_lcd.h"
 
@@ -12,16 +13,19 @@
 #define WEAK
 #endif
 
-static const char *TAG_INIT_LCD = "init_lcd_default";
-
 
 /**
  * @brief Weak default implementation. Panel-specific sources provide a strong one when enabled.
  * 
  */
 #if !defined(CONFIG_LUCKFOX_5INCH_DSI_TOUCHSCREEN) || !(CONFIG_LUCKFOX_5INCH_DSI_TOUCHSCREEN)
-void WEAK init_lcd(void)
+
+static const char *TAG_INIT_LCD = "init_lcd_default";
+
+WEAK esp_err_t init_lcd(void)
 {
   ESP_LOGW(TAG_INIT_LCD, "init_lcd(): no panel selected or panel driver disabled; default stub running");
+  return ESP_ERROR_NOT_SUPPORTED;
 }
 #endif
+  

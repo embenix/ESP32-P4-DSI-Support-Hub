@@ -1,0 +1,18 @@
+# Vendor: Waveshare ESP32-P4 Module Devkit
+# Sample SPI flash defaults
+
+# Prefer auto-detect size
+# CONFIG_ESPTOOLPY_FLASHSIZE_DETECT=y
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="16MB"
+
+# Mode: dio for broad compatibility
+CONFIG_ESPTOOLPY_FLASHMODE="dio"
+
+# Frequency: many Waveshare modules are fine at 80MHz; adjust if needed
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+CONFIG_ESPTOOLPY_FLASHFREQ="80m"
+# Alternative
+# CONFIG_ESPTOOLPY_FLASHFREQ_40M=y
+# CONFIG_ESPTOOLPY_FLASHFREQ="40m"
+
