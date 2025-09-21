@@ -1,5 +1,6 @@
 #pragma once
 
+#include "esp_err.h"
 #include "esp_check.h"
 #include "sdkconfig.h"
 
@@ -9,21 +10,20 @@ extern "C" {
 
 /* Assert on error, if selected in menuconfig. Otherwise return error code. */
 #if CONFIG_ESP_ERROR_CHECK
-#define ESP_ERROR_CHECK_RETURN_ERR(x)    ESP_ERROR_CHECK(x)
-#define ESP_ERROR_CHECK_RETURN_NULL(x)   ESP_ERROR_CHECK(x)
-#define ESP_ERROR_CHECK(x, ret)          ESP_ERROR_CHECK(x)
-#define ESP_NULL_CHECK(x, ret)           assert(x)
-#define ESP_NULL_CHECK_GOTO(x, goto_tag) assert(x)
+#define ESP_ERROR_CHECK_RETURN_ERR(x)   do { esp_err_t _e = (x); ESP_ERROR_CHECK(_e); if (_e != ESP_OK) return _e; } while (0)
+#define ESP_ERROR_CHECK_RETURN_NULL(x)  do { esp_err_t _e = (x); ESP_ERROR_CHECK(_e); if (_e != ESP_OK) return NULL; } while (0)
+#define ESP_NULL_CHECK(x, ret)          do { if ((x) == NULL) { return (ret); } } while (0)
+#define ESP_NULL_CHECK_GOTO(x, tag)     do { if ((x) == NULL) { goto tag; } } while (0)
 #else
 #define ESP_ERROR_CHECK_RETURN_ERR(x) do { \
         esp_err_t err_rc_ = (x);            \
-        if (unlikely(err_rc_ != ESP_OK)) {  \
+        if (err_rc_ != ESP_OK) {            \
             return err_rc_;                 \
         }                                   \
     } while(0)
 
 #define ESP_ERROR_CHECK_RETURN_NULL(x)  do { \
-        if (unlikely((x) != ESP_OK)) {      \
+        if ((x) != ESP_OK) {                \
             return NULL;                    \
         }                                   \
     } while(0)

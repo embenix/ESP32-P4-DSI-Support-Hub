@@ -34,7 +34,6 @@ Note: Board selection applies an sdkconfig overlay from `boards/sdkconfig.defaul
 - `main/`
   - `hw_config/` Board-level setup (I2C, LDO, MIPI DSI PHY power, etc.)
   - `lcd_config/` Panel selection and LVGL display/touch wiring
-  - `esp_lcd_dsi.[ch]` Neutral DSI-to-DPI adapter (no vendor branding)
 - `managed_components/` Third-party components (esp_lvgl_port, LCD panels, touch, etc.)
 - `boards/` sdkconfig overlays applied per selected vendor/board
 - `project_include.cmake` Logic to append the overlay based on Kconfig symbol
@@ -51,7 +50,7 @@ Planned to be added incrementally as part-time development progresses.
 
 | Vendor | Model | Resolution | Interface | Touch | Status |
 |-------:|:------|:-----------|:----------|:------|:-------|
-| Luckfox | 5" DSI Touchscreen | 800x480 | DSI (1-lane) | FT5x06 | In progress |
+| Luckfox | 5" DSI Touchscreen | 800x480 | DSI (1-lane) | FT5x06 | :white_check_mark: Works |
 | Waveshare | TBD | — | DSI | — | Planned |
 | DFRobot | TBD | — | DSI | — | Planned |
 | SeeedStudio | TBD | — | DSI | — | Planned |

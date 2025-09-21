@@ -56,20 +56,6 @@ typedef struct {
     esp_lcd_panel_handle_t      control;       /*!< ESP LCD panel (control) handle */
 } esp_lcd_handles_t;
 
-/**
- * @brief ESP display configuration structure
- *
- */
-typedef struct {
-    lvgl_port_cfg_t lvgl_port_cfg;  /*!< LVGL port configuration */
-    uint32_t        buffer_size;    /*!< Size of the buffer for the screen in pixels */
-    bool            double_buffer;  /*!< True, if should be allocated two buffers */
-    struct {
-        unsigned int buff_dma: 1;    /*!< Allocated LVGL buffer will be DMA capable */
-        unsigned int buff_spiram: 1; /*!< Allocated LVGL buffer will be in PSRAM */
-        unsigned int sw_rotate: 1;   /*!< Use software rotation (slower), The feature is unavailable under avoid-tear mode */
-    } flags;
-} display_cfg_t;
 
 esp_err_t init_lcd(void);
 lv_indev_t *display_get_input_dev(void);

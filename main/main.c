@@ -31,6 +31,9 @@ void app_main(void)
 
     i2c_scan();
 
+    // Use this method to set display rotation if needed
+    // lv_display_set_rotation(display_get_handle(), LV_DISPLAY_ROTATION_90);
+
     // Run a demo application
     lvgl_port_lock(0);
     // lv_demo_music();

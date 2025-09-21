@@ -25,7 +25,7 @@ const char *TAG      = "Luckfox 5\" Touchscreen";
 
 /* LCD color formats and other configurations */
 #define LCD_COLOR_FORMAT_RGB565         (1)
-#define LCD_COLOR_FORMAT_RGB888         (2)
+#define LCD_COLOR_FORMAT_RGB888         (2)  // Not working yet
 #define USE_LCD_COLOR_FORMAT_RGB888     (0)  // Set to 1 to use RGB888, 0 for RGB565
 #define USE_LVGL_AVOID_TEAR             (0)  // Set to 1 to enable avoid tearing feature in LVGL
 #define USE_LVGL_FULL_REFRESH           (0)  // Set to 1 to enable full refresh feature in LVGL
@@ -39,10 +39,10 @@ const char *TAG      = "Luckfox 5\" Touchscreen";
 #define LCD_MIPI_DSI_LANE_NUM           (1)  // 1 data lanes
 
 #define LCD_DRAW_BUFF_SIZE              (LCD_H_RES * 50) // Frame buffer size in pixels
-#define LCD_DRAW_BUFF_DOUBLE            (0)
+#define LCD_DRAW_BUFF_DOUBLE            (1)
 #define EN_LCD_BUFF_DMA                 (1)  // Set to 1 to allocate frame buffer in DMA-capable memory
-#define EN_LCD_BUFF_SPIRAM              (0)  // Set to 1 to allocate frame buffer in SPIRAM (if available)
-#define EN_LCD_SW_ROTATE                (0)  // Set to 1 to enable software rotation (90° or 270°)
+#define EN_LCD_BUFF_SPIRAM              (1)  // Set to 1 to allocate frame buffer in SPIRAM (if available)
+#define EN_LCD_SW_ROTATE                (1)  // Set to 1 to enable software rotation (90° or 270°)
 
 #define LCD_DPI_BUFFER_NUMS             (2)  // Number of frame buffers for DPI mode (1 or 2)
 
@@ -71,7 +71,7 @@ const char *TAG      = "Luckfox 5\" Touchscreen";
 #define LCD_TOUCH_INT_GPIO              (-1) // GPIO for LCD touch interrupt
 #define LCD_DATA_BIGENDIAN              (0)
 
-static esp_lcd_dsi_bus_handle_t mipi_dsi_bus;
+static esp_lcd_dsi_bus_handle_t mipi_dsi_bus = NULL;
 static lv_indev_t *disp_indev = NULL;
 static lv_display_t *disp = NULL;
 
@@ -91,13 +91,6 @@ esp_err_t init_lcd(void)
     // Initialize the LCD here
     esp_err_t ret = ESP_OK;
 
-    // ret = esp_i2c_init();
-    // if (ret != ESP_OK) {
-    //     ESP_LOGE(__func__, "Failed to initialize I2C for %s: %s", LCD_NAME, esp_err_to_name(ret));
-    //     return ret;
-    // }
-
-    // lcd_backlight_on();
     disp = display_lcd_init();
     ESP_NULL_CHECK(disp, ESP_FAIL);
     
@@ -226,7 +219,6 @@ esp_err_t lcd_backlight_on(void)
  */
 static lv_display_t *display_lcd_init(void)
 {
-    // assert(cfg != NULL);
     esp_lcd_handles_t lcd_panels;
     ESP_ERROR_CHECK_RETURN_NULL(esp_display_new_with_handles(NULL, &lcd_panels));
 
@@ -236,8 +228,8 @@ static lv_display_t *display_lcd_init(void)
         .io_handle = lcd_panels.io,
         .panel_handle = lcd_panels.panel,
         .control_handle = lcd_panels.control,
-        .buffer_size = LCD_DRAW_BUFF_SIZE, //cfg->buffer_size,
-        .double_buffer = LCD_DRAW_BUFF_DOUBLE, //cfg->double_buffer,
+        .buffer_size = LCD_DRAW_BUFF_SIZE,
+        .double_buffer = LCD_DRAW_BUFF_DOUBLE,
         .hres = LCD_H_RES,
         .vres = LCD_V_RES,
         .monochrome = false,

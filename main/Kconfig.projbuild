@@ -1,0 +1,81 @@
+menu "Project Configuration"
+
+    config ESP_ERROR_CHECK
+        bool "Enable error check in ESP"
+        default y
+        help
+            Error check assert the application before returning the error code.
+
+    menu "HARDWARE"
+        config ESPRESSIF_ESP32P4_FUNCTION_EV_BOARD
+            bool "ESP32-P4 Function EV Board 1.x.x"
+            default y
+            help
+                Select this option to use the ESP32-P4 Function EV Board.
+
+        config OLIMEX_ESP32P4_DEVKIT
+            bool "Olimex ESP32-P4-DevKit"
+            help
+                Select this option to use the Olimex ESP32-P4-DevKit board.
+                (https://www.olimex.com/Products/IoT/ESP32-P4/ESP32-P4-DevKit/open-source-hardware)
+
+        config WAVESHARE_ESP32P4_MODULE_DEVKIT
+            bool "Waveshare ESP32-P4-Module-DEV-KIT"
+            help
+                Select this option to use the Waveshare ESP32-P4-Module-DEV-KIT board.
+                (https://www.waveshare.com/esp32-p4-module-dev-kit.htm?sku=30560)
+
+        config GUITION_ESP32P4_DEVKIT
+            bool "Guition JC-ESP32P4-M3 DEV Board"
+            help
+                Select this option to use the Guition JC-ESP32P4-M3 DEV Board.
+                (https://www.surenoo.com/products/27872758)
+
+    endmenu
+
+    menu "I2C"
+        config ESP_I2C_NUM
+            int "I2C peripheral index"
+            default 1
+            range 0 1
+            help
+                ESP32P4 has two I2C peripherals, pick the one you want to use.
+
+        config ESP_I2C_FAST_MODE
+            bool "Enable I2C fast mode"
+            default y
+            help
+                I2C has two speed modes: normal (100kHz) and fast (400kHz).
+
+        config ESP_I2C_CLK_SPEED_HZ
+            int
+            default 400000 if ESP_I2C_FAST_MODE
+            default 100000
+    endmenu
+
+    menu "Display"
+        choice ESP_LCD_TYPE
+            prompt "Select LCD type"
+            default LUCKFOX_5INCH_DSI_TOUCHSCREEN
+            help
+                Select the LCD.
+
+            config LUCKFOX_5INCH_DSI_TOUCHSCREEN
+                bool "Luckfox's 5inch DSI-DPI LCD Display"
+            config DFROBOT_5INCH_DSI_TOUCHSCREEN
+                bool "DFRobot's 5inch DSI-DPI LCD Display"
+        endchoice
+
+        # config ESP_LCD_MIPI_DSI_LANE_BITRATE_MBPS
+        # int "MIPI DSI lane bitrate (Mbps)"
+        # default 1500
+        # range 600 1500
+        # help
+        #     Set the lane bitrate for the MIPI DSI interface in Mbps.
+        #     Adjust this value based on the display's requirements and capabilities.
+        #     Try 840, 860, 933, 1000, 1200, 1500.
+
+        
+    endmenu
+    
+endmenu
