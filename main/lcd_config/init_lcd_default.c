@@ -25,7 +25,7 @@ static const char *TAG_INIT_LCD = "init_lcd_default";
 WEAK esp_err_t init_lcd(void)
 {
   ESP_LOGW(TAG_INIT_LCD, "init_lcd(): no panel selected or panel driver disabled; default stub running");
-  return ESP_ERROR_NOT_SUPPORTED;
+  return ESP_OK;
 }
 #endif
   

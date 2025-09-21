@@ -50,9 +50,9 @@ Planned to be added incrementally as part-time development progresses.
 
 | Vendor | Model | Resolution | Interface | Touch | Status |
 |-------:|:------|:-----------|:----------|:------|:-------|
-| Luckfox | 5" DSI Touchscreen | 800x480 | DSI (1-lane) | FT5x06 | :white_check_mark: Works |
+| Luckfox | [5" DSI (SKU: 28560)][id1] | 800x480 | DSI (1-lane) | FT5x06 | :white_check_mark: Works |
+| DFRobot | [5" DSI (SKU: DFR0550-V2)][id2] | 800x480 | DSI (1-lane) | FT5216 | In progress |
 | Waveshare | TBD | — | DSI | — | Planned |
-| DFRobot | TBD | — | DSI | — | Planned |
 | SeeedStudio | TBD | — | DSI | — | Planned |
 
 Contributions and test reports are welcome.
@@ -61,3 +61,5 @@ Contributions and test reports are welcome.
 
 See `LICENSE` for details.
 
+[id1]: https://www.luckfox.com/Displays/EN-5inch-DSI-Touchscreen
+[id2]: https://www.dfrobot.com/product-2791.html
