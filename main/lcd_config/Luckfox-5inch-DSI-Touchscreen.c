@@ -97,6 +97,9 @@ esp_err_t init_lcd(void)
     disp_indev = esp_display_indev_init(disp);
     ESP_NULL_CHECK(disp_indev, ESP_FAIL);
 
+    /* Initialize backlight to 50% */
+    ESP_ERROR_CHECK_RETURN_ERR(lcd_brightness_set(50));
+
     ESP_LOGI(__func__, "%s initialized successfully.", LCD_NAME);
     return ret;
 }

@@ -1,13 +1,13 @@
 /**
- * @file Luckfox-5inch-DSI-Touchscreen.h
+ * @file DFRobot-5inch-DSI-Touchscreen.h
  * @author Yasir K. Qureshi (embenix.com)
- * @brief Luckfox 5-inch DSI Touchscreen driver
+ * @brief DFRobot 5-inch DSI Touchscreen driver
  * @version 0.1
- * @date 2025-09-19
+ * @date 2025-09-21
  * 
  * @copyright Copyright (c) 2025
  * 
- * @link https://wiki.luckfox.com/Display/5inch-DSI-Touchscreen/ @endlink
+ * @link https://wiki.dfrobot.com/_SKU_DFR0550-V2_Touchscreen_with_Optical_Bonding_for_Raspberry_Pi @endlink
  */
 
 // This file is included only if the Luckfox 5-inch DSI Touchscreen
@@ -22,6 +22,8 @@
 
 const char *LCD_NAME = "DFRobot 5inch DSI Touchscreen";
 const char *TAG      = "DFRobot 5\" Touchscreen";
+
+#define EN_STM32_PWM_CONTROLLER         (0)
 
 /* LCD color formats and other configurations */
 #define LCD_COLOR_FORMAT_RGB565         (1)
@@ -39,7 +41,7 @@ const char *TAG      = "DFRobot 5\" Touchscreen";
 #define LCD_MIPI_DSI_LANE_NUM           (1)  // 1 data lanes
 
 #define LCD_DRAW_BUFF_SIZE              (LCD_H_RES * 50) // Frame buffer size in pixels
-#define LCD_DRAW_BUFF_DOUBLE            (1)
+#define LCD_DRAW_BUFF_DOUBLE            (0)
 #define EN_LCD_BUFF_DMA                 (1)  // Set to 1 to allocate frame buffer in DMA-capable memory
 #define EN_LCD_BUFF_SPIRAM              (1)  // Set to 1 to allocate frame buffer in SPIRAM (if available)
 #define EN_LCD_SW_ROTATE                (1)  // Set to 1 to enable software rotation (90° or 270°)
@@ -71,6 +73,11 @@ const char *TAG      = "DFRobot 5\" Touchscreen";
 #define LCD_TOUCH_INT_GPIO              (-1) // GPIO for LCD touch interrupt
 #define LCD_DATA_BIGENDIAN              (0)
 
+#define STM32_BACKLIGHT_ADDR            (0x45)  // Or 0x45 if backlight MCU handles touch
+#define CMD_ENABLE_TOUCH                (0x80)
+#define CMD_DISABLE_TOUCH               (0xC1)
+#define CMD_RESET_TOUCH                 (0xAC)
+
 static esp_lcd_dsi_bus_handle_t mipi_dsi_bus = NULL;
 static lv_indev_t *disp_indev = NULL;
 static lv_display_t *disp = NULL;
@@ -81,6 +88,7 @@ static lv_indev_t *esp_display_indev_init(lv_display_t *disp);
 static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config, esp_lcd_handles_t *ret_handles);
 static esp_err_t lcd_touch_new(const lcd_touch_config_t *config, esp_lcd_touch_handle_t *ret_touch);
 static esp_err_t lcd_brightness_init(void);
+
 
 /**
  * @brief Initialize the LCD
@@ -96,6 +104,9 @@ esp_err_t init_lcd(void)
     
     disp_indev = esp_display_indev_init(disp);
     ESP_NULL_CHECK(disp_indev, ESP_FAIL);
+
+    /* Initialize backlight to 50% */
+    ESP_ERROR_CHECK_RETURN_ERR(lcd_brightness_set(50));
 
     ESP_LOGI(__func__, "%s initialized successfully.", LCD_NAME);
     return ret;
@@ -130,6 +141,87 @@ lv_display_t *display_get_handle(void)
 {
     return disp;
 }
+
+#if EN_STM32_PWM_CONTROLLER == 1
+static esp_err_t stm32_send_command(uint8_t cmd, uint8_t data);
+static void lcd_enable_touch_panel(void);
+static void lcd_disable_touch_panel(void);
+static void lcd_reset_touch_panel(void);
+
+/**
+ * @brief Send a command to the STM32 backlight controller
+ * 
+ * @return esp_err_t ESP_OK on success, or an error code on failure
+ * 
+ */
+static esp_err_t stm32_send_command(uint8_t cmd, uint8_t data)
+{
+    uint8_t data_to_send[2] = {cmd, data};
+
+    i2c_device_config_t i2c_dev_conf = {
+        .scl_speed_hz = 100 * 1000,
+        .device_address = STM32_BACKLIGHT_ADDR,
+    };
+
+    i2c_master_dev_handle_t dev_handle = NULL;
+    i2c_master_bus_handle_t i2c_bus = esp_i2c_get_handle();
+    if (i2c_bus == NULL) {
+        ESP_LOGE(__func__, "I2C bus handle is NULL");
+        return ESP_FAIL;
+    }
+    if (i2c_master_bus_add_device(i2c_bus, &i2c_dev_conf, &dev_handle) != ESP_OK)
+    {
+        ESP_LOGE(__func__, "Failed to add I2C device at address 0x%02X", STM32_BACKLIGHT_ADDR);
+        return ESP_FAIL;
+    }
+
+    esp_err_t ret = i2c_master_transmit(dev_handle, data_to_send, sizeof(data_to_send), 50);
+    if (ret != ESP_OK)
+    {
+        i2c_master_bus_rm_device(dev_handle);
+        return ret;
+    }
+
+    i2c_master_bus_rm_device(dev_handle);
+
+    return ESP_OK;
+}
+
+/**
+ * @brief Enable the touch panel via STM32
+ * 
+ */
+void lcd_enable_touch_panel(void)
+{
+    ESP_LOGI(TAG, "Enabling touch panel via STM32");
+    if (stm32_send_command(CMD_ENABLE_TOUCH, 0xFF) == ESP_OK) {
+        ESP_LOGI(TAG, "Touch panel enabled");
+    } else {
+        ESP_LOGE(TAG, "Failed to enable touch panel");
+    }
+}
+
+/**
+ * @brief Disable the touch panel via STM32
+ * 
+ */
+void lcd_disable_touch_panel(void)
+{
+    ESP_LOGI(TAG, "Disabling touch panel via STM32");
+    stm32_send_command(CMD_DISABLE_TOUCH, 0x00);
+}
+
+/**
+ * @brief Reset the touch panel via STM32
+ * 
+ */
+void lcd_reset_touch_panel(void)
+{
+    ESP_LOGI(TAG, "Resetting touch panel via STM32");
+    stm32_send_command(CMD_RESET_TOUCH, 0x01);
+    vTaskDelay(pdMS_TO_TICKS(100));  // Allow reset time
+}
+#endif  // EN_STM32_PWM_CONTROLLER
 
 /**
  * @brief Initialize LCD brightness control
@@ -169,10 +261,12 @@ esp_err_t lcd_brightness_set(int brightness_percent)
 
     i2c_master_dev_handle_t dev_handle = NULL;
     i2c_master_bus_handle_t i2c_bus = esp_i2c_get_handle();
+
     if (i2c_bus == NULL) {
         ESP_LOGE(__func__, "I2C bus handle is NULL");
         return ESP_FAIL;
     }
+
     if (i2c_master_bus_add_device(i2c_bus, &i2c_dev_conf, &dev_handle) != ESP_OK)
     {
         ESP_LOGE(__func__, "Failed to add I2C device at address 0x%02X", chip_addr);
@@ -377,6 +471,14 @@ static esp_err_t lcd_touch_new(const lcd_touch_config_t *config, esp_lcd_touch_h
     /* Initilize I2C */
     ESP_ERROR_CHECK_RETURN_ERR(esp_i2c_init());
 
+#if EN_STM32_PWM_CONTROLLER == 1
+    /* Enable Touch panel */
+    // lcd_disable_touch_panel();
+    // vTaskDelay(pdMS_TO_TICKS(10));  // Allow some time before reset
+    // lcd_reset_touch_panel();
+    // lcd_enable_touch_panel();
+#endif
+
     /* Initialize touch */
     const esp_lcd_touch_config_t tp_cfg = {
         .x_max = LCD_H_RES,
@@ -390,8 +492,8 @@ static esp_err_t lcd_touch_new(const lcd_touch_config_t *config, esp_lcd_touch_h
         },
         .flags = {
             .swap_xy = 0,
-            .mirror_x = 0,
-            .mirror_y = 0,
+            .mirror_x = 1,
+            .mirror_y = 1,
         },
     };
     esp_lcd_panel_io_handle_t tp_io_handle = NULL;
@@ -399,13 +501,13 @@ static esp_err_t lcd_touch_new(const lcd_touch_config_t *config, esp_lcd_touch_h
         .dev_addr = ESP_LCD_TOUCH_IO_I2C_FT5x06_ADDRESS,
         .control_phase_bytes = 1,
         .dc_bit_offset = 0,
-        .lcd_cmd_bits = 16,
+        .lcd_cmd_bits = 8,
         .flags = {
             .disable_control_phase = 1,
         },
     };
 
-    tp_io_config.scl_speed_hz = 100000;
+    tp_io_config.scl_speed_hz = 400000;
 
     i2c_master_bus_handle_t i2c_bus = esp_i2c_get_handle();
     ESP_LOGI(__func__, "I2C bus handle: %p", i2c_bus);

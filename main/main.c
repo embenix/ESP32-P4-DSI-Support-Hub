@@ -7,13 +7,14 @@
 #include "lvgl.h"
 #include "lv_demos.h"
 #include "esp_lvgl_port.h"
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
 #include "esp_log.h"
 #include "init_lcd.h"
 #include "init_hw.h"
 #include "esp_err_check.h"
 
 static const char *TAG = "DSI support hub";
+
 /**
  * @brief Application entry point
  * 

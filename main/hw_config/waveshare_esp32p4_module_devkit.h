@@ -34,6 +34,9 @@ extern "C" {
 #define ESP_MIPI_DSI_PHY_PWR_LDO_CHAN       (3)  // LDO_VO3 is connected to VDD_MIPI_DPHY
 #define ESP_MIPI_DSI_PHY_PWR_LDO_VOLTAGE_MV (2500)
 
+// Todo: Define other board-specific configurations here
+
+// Work in progress
 
 /**
  * @brief Initialize the hardware components

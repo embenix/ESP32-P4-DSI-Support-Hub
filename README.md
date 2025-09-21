@@ -1,8 +1,13 @@
-## ! Work in Progress
-
 # ESP32-P4 MIPI DSI Support Hub
 
+> Momentum beats perfection—keep moving, keep improving.
+
+(Note: This is work in progress.)
 A general-purpose boilerplate for bringing up MIPI DSI LCDs (with optional touch) on the ESP32‑P4. This repo aims to give developers a clean, extensible starting point: select a board, select a panel, build, and get pixels on the screen with LVGL.
+
+## Feature
+
+Modular, trim-to-fit panel support: choose your LCD and keep builds lean by removing unused drivers in `lcd_config/`.
 
 ## Goals
 
@@ -14,18 +19,18 @@ A general-purpose boilerplate for bringing up MIPI DSI LCDs (with optional touch
 ## Quick start
 
 1. Prerequisites
-	- ESP-IDF v5.3 or newer (P4 + MIPI DSI capable toolchain)
-	- Python and Git installed
+    - ESP-IDF v5.3 or newer (P4 + MIPI DSI capable toolchain)
+    - Python and Git installed
 
 2. Configure
-	- Select your board in menuconfig under: Project Configuration → Hardware Vendor/Board
-	- Select your LCD panel: Project Configuration → Display → Panel
-	- Touch (if present): Project Configuration → Touch → Controller
+    - Select your board in menuconfig under: Project Configuration → Hardware Vendor/Board
+    - Select your LCD panel: Project Configuration → Display → Panel
+    - No options will be added later
 
 3. Build and flash
-	- idf.py set-target esp32p4
-	- idf.py menuconfig
-	- idf.py -p PORT flash monitor
+    - idf.py set-target esp32p4
+    - idf.py menuconfig
+    - idf.py -p PORT flash monitor
 
 Note: Board selection applies an sdkconfig overlay from `boards/sdkconfig.defaults.<vendor>` to set sane SPI flash options and other defaults.
 
@@ -51,7 +56,8 @@ Planned to be added incrementally as part-time development progresses.
 | Vendor | Model | Resolution | Interface | Touch | Status |
 |-------:|:------|:-----------|:----------|:------|:-------|
 | Luckfox | [5" DSI (SKU: 28560)][id1] | 800x480 | DSI (1-lane) | FT5x06 | :white_check_mark: Works |
-| DFRobot | [5" DSI (SKU: DFR0550-V2)][id2] | 800x480 | DSI (1-lane) | FT5216 | In progress |
+| DFRobot | [5" DSI (SKU: DFR0550-V2)][id2] | 800x480 | DSI (1-lane) | FT5x06 | :white_check_mark: Works |
+| RaspberyPi | [RPi Touch Display V2][id3] | 720x1280 | DSI (2-lane) | Figuring out | In progress |
 | Waveshare | TBD | — | DSI | — | Planned |
 | SeeedStudio | TBD | — | DSI | — | Planned |
 
@@ -63,3 +69,4 @@ See `LICENSE` for details.
 
 [id1]: https://www.luckfox.com/Displays/EN-5inch-DSI-Touchscreen
 [id2]: https://www.dfrobot.com/product-2791.html
+[id3]: https://www.raspberrypi.com/products/touch-display-2/
