@@ -57,7 +57,12 @@ Planned to be added incrementally as part-time development progresses.
 |-------:|:------|:-----------|:----------|:------|:-------|
 | Luckfox | [5" DSI (SKU: 28560)][id1] | 800x480 | DSI (1-lane) | FT5x06 | :white_check_mark: Works |
 | DFRobot | [5" DSI (SKU: DFR0550-V2)][id2] | 800x480 | DSI (1-lane) | FT5x06 | :white_check_mark: Works |
+<<<<<<< Updated upstream
 | RaspberyPi | [RPi 7" Touch Display V2][id3] | 720x1280 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
+=======
+| RaspberyPi | [RPi Touch Display V2][id3] | 720x1280 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
+| Amelin | [7" 1024x600 LCD T D][id4] | 1024x600 | DSI (2-lanes) | GT911 | In progress |
+>>>>>>> Stashed changes
 | Waveshare | TBD | — | DSI | — | Planned |
 | SeeedStudio | TBD | — | DSI | — | Planned |
 
@@ -66,24 +71,35 @@ Contributions and test reports are welcome.
 [id1]: https://www.luckfox.com/Displays/EN-5inch-DSI-Touchscreen
 [id2]: https://www.dfrobot.com/product-2791.html
 [id3]: https://www.raspberrypi.com/products/touch-display-2/
+[id4]: https://www.vip-lcd.com/7-Inch-LCD-Touch-Display-Screen-1024-600-LVDS-Interface-with-Touch-Panel-7-0-Inch-Lcd-Module-pd591986658.html
+
+## Quick tips for troubleshooting
+
+During bring-up across multiple DSI panels, configuration changes can occasionally leave the panel in an unresponsive state. If you flash the ESP32‑P4 with different DSI settings while the same panel remains connected, the panel might not reflect the new configuration. In that case:
+
+- Fully power-cycle the system (board and display) to clear any latched state in the panel or bridge.
+- If the display shows scrambled frames, review the `LCD_MIPI_DSI_LANE_BITRATE_MBPS` setting and lower it as needed. A typical stable range is 600–1500 Mbps.
+- If the touch controller doesn’t initialize or the LCD (e.g., RPi 7") doesn’t power up, reduce the I2C bus speed. Some panels don’t tolerate higher rates. For example, the Luckfox 5" touch only initialized reliably at ≤100 kHz.
 
 ## Pictures
 
 Below are a few photos from the project setup and output. Images are stored under `pictures/`.
 
-![Picture 01](pictures/01.jpg)
+![Luckfox 5" Touch Display](pictures/01.jpg)
 
 ![Picture 02](pictures/02.jpg)
 
 ![Picture 03](pictures/03.jpg)
 
-![Picture 04](pictures/04.jpg)
+![Guition ESP32-P4 devkit](pictures/04.jpg)
 
 ![Picture 05](pictures/05.jpg)
 
 ![Picture 06](pictures/06.jpg)
 
 ![Picture 07](pictures/07.jpg)
+
+![Espressif ESP32-P4 Function Board](pictures/08.jpg)
 
 ## License
 

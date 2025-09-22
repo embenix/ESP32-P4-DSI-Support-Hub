@@ -75,6 +75,12 @@ menu "Project Configuration"
                 help
                     Raspberry Pi 7inch Touch Display V2 (700x1280) with touch.
                     https://www.raspberrypi.com/products/raspberry-pi-7-inch-touch-display/
+            config AMELIN_EK79007_7INCH_TOUCH_DISPLAY
+                bool "Amelin EK79007 7inch Touch Display"
+                help
+                    Amelin EK79007 7inch Touch Display (1024x600) with touch.
+                    Product ID: AML070JGI50-07403L
+                    https://www.vip-lcd.com/7-Inch-LCD-Touch-Display-Screen-1024-600-LVDS-Interface-with-Touch-Panel-7-0-Inch-Lcd-Module-pd591986658.html
         endchoice
 
         # config ESP_LCD_MIPI_DSI_LANE_BITRATE_MBPS

@@ -1,5 +1,5 @@
 /**
- * @file DFRobot-5inch-DSI-Touchscreen.h
+ * @file dfrobot-5inch-dsi-touchscreen.c
  * @author Yasir K. Qureshi (embenix.com)
  * @brief DFRobot 5-inch DSI Touchscreen driver
  * @version 0.2
@@ -10,7 +10,7 @@
  * @link https://wiki.dfrobot.com/_SKU_DFR0550-V2_Touchscreen_with_Optical_Bonding_for_Raspberry_Pi @endlink
  */
 
-// This file is included only if the Luckfox 5-inch DSI Touchscreen
+// This file is included only if the DFRobot 5-inch DSI Touchscreen
 // is enabled in the project configuration.
 #include "sdkconfig.h"
 

@@ -1,16 +1,16 @@
 /**
- * @file Raspberry-Pi-7inch-Touch-Display-V2.h
+ * @file rpi-7inch-touch-display-v2.c
  * @author Yasir K. Qureshi (embenix.com)
  * @brief Raspberry Pi 7inch Touch Display V2 driver
- * @version 0.1
- * @date 2025-09-21
+ * @version 0.2
+ * @date 2025-09-22
  * 
  * @copyright Copyright (c) 2025
  * 
  * @link https://wiki.dfrobot.com/_SKU_DFR0550-V2_Touchscreen_with_Optical_Bonding_for_Raspberry_Pi @endlink
  */
 
-// This file is included only if the Luckfox 5-inch DSI Touchscreen
+// This file is included only if the Raspberry Pi 7inch Touch Display V2
 // is enabled in the project configuration.
 #include "sdkconfig.h"
 
@@ -55,7 +55,7 @@ const char *TAG      = "RPi 7\" Touch Display V2";
 #define EN_LCD_SW_ROTATE                (1)  // Set to 1 to enable software rotation (90° or 270°)
 #define LCD_DPI_BUFFER_NUMS             (2)  // Number of frame buffers for DPI mode (1 or 2)
 
-#define ILI9881C_720_1280_PANEL_60HZ_DPI_CONFIG(px_format) \
+#define RPI_7INCH_TOUCH_DISPLAY_V2_CONFIG(px_format) \
     {                                                      \
         .dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT,       \
         .dpi_clock_freq_mhz = 80,                          \
@@ -379,9 +379,9 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
     esp_lcd_panel_handle_t disp_panel = NULL;
 
 #if USE_LCD_COLOR_FORMAT_RGB888
-    esp_lcd_dpi_panel_config_t dpi_config = ILI9881C_720_1280_PANEL_60HZ_DPI_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB888);
+    esp_lcd_dpi_panel_config_t dpi_config = RPI_7INCH_TOUCH_DISPLAY_V2_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB888);
 #else
-    esp_lcd_dpi_panel_config_t dpi_config = ILI9881C_720_1280_PANEL_60HZ_DPI_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB565);
+    esp_lcd_dpi_panel_config_t dpi_config = RPI_7INCH_TOUCH_DISPLAY_V2_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB565);
 #endif
 
     dpi_config.num_fbs = LCD_DPI_BUFFER_NUMS;
