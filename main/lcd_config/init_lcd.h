@@ -41,6 +41,25 @@ typedef struct {
     void *dummy;    /* Placeholder for touch configuration parameters */
 } lcd_touch_config_t;
 
+// /**
+//  * @brief LCD panel vendor configuration.
+//  *
+//  * @note  This structure needs to be passed to the `vendor_config` field in `esp_lcd_panel_dev_config_t`.
+//  *
+//  */
+// typedef struct {
+//     const hx8394_lcd_init_cmd_t *init_cmds;         /*!< Pointer to initialization commands array. Set to NULL if using default commands.
+//                                                      *   The array should be declared as `static const` and positioned outside the function.
+//                                                      *   Please refer to `vendor_specific_init_default` in source file.
+//                                                      */
+//     uint16_t init_cmds_size;                        /*<! Number of commands in above array */
+//     struct {
+//         esp_lcd_dsi_bus_handle_t dsi_bus;               /*!< MIPI-DSI bus configuration */
+//         const esp_lcd_dpi_panel_config_t *dpi_config;   /*!< MIPI-DPI panel configuration */
+//         uint8_t  lane_num;
+//     } mipi_config;
+// } ili9881c_vendor_config_t;
+
 /**
  * @brief ESP display return handles
  *

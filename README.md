@@ -57,16 +57,34 @@ Planned to be added incrementally as part-time development progresses.
 |-------:|:------|:-----------|:----------|:------|:-------|
 | Luckfox | [5" DSI (SKU: 28560)][id1] | 800x480 | DSI (1-lane) | FT5x06 | :white_check_mark: Works |
 | DFRobot | [5" DSI (SKU: DFR0550-V2)][id2] | 800x480 | DSI (1-lane) | FT5x06 | :white_check_mark: Works |
-| RaspberyPi | [RPi Touch Display V2][id3] | 720x1280 | DSI (2-lane) | Figuring out | In progress |
+| RaspberyPi | [RPi Touch Display V2][id3] | 720x1280 | DSI (2-lanes) | Figuring out | :white_check_mark: Works |
 | Waveshare | TBD | — | DSI | — | Planned |
 | SeeedStudio | TBD | — | DSI | — | Planned |
 
 Contributions and test reports are welcome.
 
-## License
-
-See `LICENSE` for details.
-
 [id1]: https://www.luckfox.com/Displays/EN-5inch-DSI-Touchscreen
 [id2]: https://www.dfrobot.com/product-2791.html
 [id3]: https://www.raspberrypi.com/products/touch-display-2/
+
+## Pictures
+
+Below are a few photos from the project setup and output. Images are stored under `pictures/`.
+
+![Picture 01](pictures/01.jpg)
+
+![Picture 02](pictures/02.jpg)
+
+![Picture 03](pictures/03.jpg)
+
+![Picture 04](pictures/04.jpg)
+
+![Picture 05](pictures/05.jpg)
+
+![Picture 06](pictures/06.jpg)
+
+![Picture 07](pictures/07.jpg)
+
+## License
+
+See `LICENSE` for details.

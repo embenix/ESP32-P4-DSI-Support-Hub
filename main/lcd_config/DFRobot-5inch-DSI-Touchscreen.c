@@ -2,8 +2,8 @@
  * @file DFRobot-5inch-DSI-Touchscreen.h
  * @author Yasir K. Qureshi (embenix.com)
  * @brief DFRobot 5-inch DSI Touchscreen driver
- * @version 0.1
- * @date 2025-09-21
+ * @version 0.2
+ * @date 2025-09-22
  * 
  * @copyright Copyright (c) 2025
  * 
@@ -14,7 +14,7 @@
 // is enabled in the project configuration.
 #include "sdkconfig.h"
 
-#if CONFIG_DFROBOT_5INCH_DSI_TOUCHSCREEN
+#if CONFIG_DFROBOT_5INCH_DSI_TOUCHSCREEN == 1
 
 #include <stdio.h>
 #include "init_lcd.h"
@@ -40,12 +40,20 @@ const char *TAG      = "DFRobot 5\" Touchscreen";
 #define LCD_MIPI_DSI_LANE_BITRATE_MBPS  (800)
 #define LCD_MIPI_DSI_LANE_NUM           (1)  // 1 data lanes
 
+#if USE_LCD_COLOR_FORMAT_RGB888
+/* RGB888 needs DMA2D path; keep buffers in internal RAM and moderate size */
+#define LCD_DRAW_BUFF_SIZE              (LCD_H_RES * 30)
+#define LCD_DRAW_BUFF_DOUBLE            (0)
+#define EN_LCD_BUFF_DMA                 (0) // Set to 0 to allocate frame buffer in internal RAM
+#define EN_LCD_BUFF_SPIRAM              (0) // Set to 0 to allocate frame buffer in internal RAM
+#else
 #define LCD_DRAW_BUFF_SIZE              (LCD_H_RES * 50) // Frame buffer size in pixels
 #define LCD_DRAW_BUFF_DOUBLE            (0)
 #define EN_LCD_BUFF_DMA                 (1)  // Set to 1 to allocate frame buffer in DMA-capable memory
 #define EN_LCD_BUFF_SPIRAM              (1)  // Set to 1 to allocate frame buffer in SPIRAM (if available)
-#define EN_LCD_SW_ROTATE                (1)  // Set to 1 to enable software rotation (90° or 270°)
+#endif
 
+#define EN_LCD_SW_ROTATE                (1)  // Set to 1 to enable software rotation (90° or 270°)
 #define LCD_DPI_BUFFER_NUMS             (2)  // Number of frame buffers for DPI mode (1 or 2)
 
 #define DSI_PANEL_DPI_CONFIG(px_format)              \
@@ -191,7 +199,7 @@ static esp_err_t stm32_send_command(uint8_t cmd, uint8_t data)
  * @brief Enable the touch panel via STM32
  * 
  */
-void lcd_enable_touch_panel(void)
+static void lcd_enable_touch_panel(void)
 {
     ESP_LOGI(TAG, "Enabling touch panel via STM32");
     if (stm32_send_command(CMD_ENABLE_TOUCH, 0xFF) == ESP_OK) {
@@ -205,7 +213,7 @@ void lcd_enable_touch_panel(void)
  * @brief Disable the touch panel via STM32
  * 
  */
-void lcd_disable_touch_panel(void)
+static void lcd_disable_touch_panel(void)
 {
     ESP_LOGI(TAG, "Disabling touch panel via STM32");
     stm32_send_command(CMD_DISABLE_TOUCH, 0x00);
@@ -215,7 +223,7 @@ void lcd_disable_touch_panel(void)
  * @brief Reset the touch panel via STM32
  * 
  */
-void lcd_reset_touch_panel(void)
+static void lcd_reset_touch_panel(void)
 {
     ESP_LOGI(TAG, "Resetting touch panel via STM32");
     stm32_send_command(CMD_RESET_TOUCH, 0x01);

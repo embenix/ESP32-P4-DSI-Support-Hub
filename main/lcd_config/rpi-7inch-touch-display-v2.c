@@ -1,31 +1,32 @@
 /**
- * @file Luckfox-5inch-DSI-Touchscreen.h
+ * @file Raspberry-Pi-7inch-Touch-Display-V2.h
  * @author Yasir K. Qureshi (embenix.com)
- * @brief Luckfox 5-inch DSI Touchscreen driver
- * @version 0.2
- * @date 2025-09-22
+ * @brief Raspberry Pi 7inch Touch Display V2 driver
+ * @version 0.1
+ * @date 2025-09-21
  * 
  * @copyright Copyright (c) 2025
  * 
- * @link https://wiki.luckfox.com/Display/5inch-DSI-Touchscreen/ @endlink
+ * @link https://wiki.dfrobot.com/_SKU_DFR0550-V2_Touchscreen_with_Optical_Bonding_for_Raspberry_Pi @endlink
  */
 
 // This file is included only if the Luckfox 5-inch DSI Touchscreen
 // is enabled in the project configuration.
 #include "sdkconfig.h"
 
-#if CONFIG_LUCKFOX_5INCH_DSI_TOUCHSCREEN == 1
+#if CONFIG_RPI_7INCH_TOUCH_DISPLAY_V2 == 1
 
 #include <stdio.h>
 #include "init_lcd.h"
-#include "esp_lcd_touch_ft5x06.h"
+#include "esp_lcd_touch_gt911.h"
+#include "esp_lcd_ili9881c.h"
 
-const char *LCD_NAME = "Luckfox 5inch DSI Touchscreen";
-const char *TAG      = "Luckfox 5\" Touchscreen";
+const char *LCD_NAME = "Raspberry Pi 7inch Touch Display V2";
+const char *TAG      = "RPi 7\" Touch Display V2";
 
 /* LCD color formats and other configurations */
 #define LCD_COLOR_FORMAT_RGB565         (1)
-#define LCD_COLOR_FORMAT_RGB888         (2)  // Not working yet
+#define LCD_COLOR_FORMAT_RGB888         (2)  // Works but very slow | better to use RGB565
 #define USE_LCD_COLOR_FORMAT_RGB888     (0)  // Set to 1 to use RGB888, 0 for RGB565
 #define USE_LVGL_AVOID_TEAR             (0)  // Set to 1 to enable avoid tearing feature in LVGL
 #define USE_LVGL_FULL_REFRESH           (0)  // Set to 1 to enable full refresh feature in LVGL
@@ -33,10 +34,10 @@ const char *TAG      = "Luckfox 5\" Touchscreen";
 
 #define LCD_COLOR_SPACE                 (ESP_LCD_COLOR_SPACE_RGB)
 
-#define LCD_H_RES                       (800)
-#define LCD_V_RES                       (480)
-#define LCD_MIPI_DSI_LANE_BITRATE_MBPS  (800)
-#define LCD_MIPI_DSI_LANE_NUM           (1)  // 1 data lanes
+#define LCD_H_RES                       (720)
+#define LCD_V_RES                       (1280)
+#define LCD_MIPI_DSI_LANE_BITRATE_MBPS  (1000)
+#define LCD_MIPI_DSI_LANE_NUM           (2)  // 2 data lanes
 
 #if USE_LCD_COLOR_FORMAT_RGB888
 /* RGB888 needs DMA2D path; keep buffers in internal RAM and moderate size */
@@ -54,30 +55,47 @@ const char *TAG      = "Luckfox 5\" Touchscreen";
 #define EN_LCD_SW_ROTATE                (1)  // Set to 1 to enable software rotation (90° or 270°)
 #define LCD_DPI_BUFFER_NUMS             (2)  // Number of frame buffers for DPI mode (1 or 2)
 
-#define DSI_PANEL_DPI_CONFIG(px_format)              \
-{                                                    \
-    .dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT,     \
-    .dpi_clock_freq_mhz = 30,                        \
-    .virtual_channel = 0,                            \
-    .pixel_format = px_format,                       \
-    .num_fbs = 1,                                    \
-    .video_timing = {                                \
-        .h_size = 800,                               \
-        .v_size = 480,                               \
-        .hsync_back_porch = 2,                       \
-        .hsync_pulse_width = 45,                     \
-        .hsync_front_porch = 131,                    \
-        .vsync_back_porch = 2,                       \
-        .vsync_pulse_width = 22,                     \
-        .vsync_front_porch = 7,                      \
-    },                                               \
-    .flags.use_dma2d = true,                         \
-}
+#define ILI9881C_720_1280_PANEL_60HZ_DPI_CONFIG(px_format) \
+    {                                                      \
+        .dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT,       \
+        .dpi_clock_freq_mhz = 80,                          \
+        .virtual_channel = 0,                              \
+        .pixel_format = px_format,                         \
+        .num_fbs = 1,                                      \
+        .video_timing = {                                  \
+            .h_size = 720,                                 \
+            .v_size = 1280,                                \
+            .hsync_back_porch = 239,                       \
+            .hsync_pulse_width = 50,                       \
+            .hsync_front_porch = 33,                       \
+            .vsync_back_porch = 20,                        \
+            .vsync_pulse_width = 30,                       \
+            .vsync_front_porch = 2,                        \
+        },                                                 \
+        .flags.use_dma2d = true,                           \
+    }
 
 #define LCD_RST_GPIO                    (-1) // GPIO for LCD reset
 #define LCD_TOUCH_RST_GPIO              (-1) // Shared with LCD reset
 #define LCD_TOUCH_INT_GPIO              (-1) // GPIO for LCD touch interrupt
 #define LCD_DATA_BIGENDIAN              (0)
+
+// TC358762 bridge configuration
+#define TC358762_ADDR                   (0x45) // 7-bit I2C address of the TC358762 bridge
+#define RPI_TOUCH_V2_REG_ID             (0x01)
+#define RPI_TOUCH_V2_REG_POWERON        (0x02)
+#define RPI_TOUCH_V2_REG_PWM            (0x03)
+
+// REG_POWERON bits
+#define RPI_TOUCH_V2_LCD_RESET_BIT      (1u << 0) // 1 = deassert LCD reset
+#define RPI_TOUCH_V2_CTP_RESET_BIT      (1u << 1) // 1 = deassert Touch reset
+
+// REG_PWM bits
+#define RPI_TOUCH_V2_PWM_ENABLE         (1u << 7)
+#define RPI_TOUCH_V2_PWM_VALUE_MASK     (0x1Fu)      // 5-bit brightness (0..31)
+
+// Goodix GT911 typical 7-bit I2C address
+#define GT911_ADDR                      (0x5D)
 
 static esp_lcd_dsi_bus_handle_t mipi_dsi_bus = NULL;
 static lv_indev_t *disp_indev = NULL;
@@ -89,6 +107,8 @@ static lv_indev_t *esp_display_indev_init(lv_display_t *disp);
 static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config, esp_lcd_handles_t *ret_handles);
 static esp_err_t lcd_touch_new(const lcd_touch_config_t *config, esp_lcd_touch_handle_t *ret_touch);
 static esp_err_t lcd_brightness_init(void);
+
+static bool IS_LCD_ENABLED = false; // Track if LCD is enabled
 
 /**
  * @brief Initialize the LCD
@@ -105,8 +125,8 @@ esp_err_t init_lcd(void)
     disp_indev = esp_display_indev_init(disp);
     ESP_NULL_CHECK(disp_indev, ESP_FAIL);
 
-    /* Initialize backlight to 50% */
-    ESP_ERROR_CHECK_RETURN_ERR(lcd_brightness_set(50));
+    /* Initialize backlight to 10 | Range: 0-31 */
+    ESP_ERROR_CHECK_RETURN_ERR(lcd_brightness_set(25));
 
     ESP_LOGI(__func__, "%s initialized successfully.", LCD_NAME);
     return ret;
@@ -142,6 +162,67 @@ lv_display_t *display_get_handle(void)
     return disp;
 }
 
+// TC358762 bridge configuration
+static esp_err_t tc358762_send_command(uint8_t cmd, uint8_t data);
+static esp_err_t lcd_enable_touch_panel(bool lcd_on, bool ctp_on);
+
+/**
+ * @brief Send a command to the STM32 backlight controller
+ * 
+ * @return esp_err_t ESP_OK on success, or an error code on failure
+ * 
+ */
+static esp_err_t tc358762_send_command(uint8_t cmd, uint8_t data)
+{
+    ESP_ERROR_CHECK_RETURN_ERR(esp_i2c_init());
+
+    uint8_t data_to_send[2] = {cmd, data};
+
+    i2c_device_config_t i2c_dev_conf = {
+        .scl_speed_hz = 100 * 1000,
+        .device_address = TC358762_ADDR,
+    };
+
+    i2c_master_dev_handle_t dev_handle = NULL;
+    i2c_master_bus_handle_t i2c_bus = esp_i2c_get_handle();
+    if (i2c_bus == NULL) {
+        ESP_LOGE(__func__, "I2C bus handle is NULL");
+        return ESP_FAIL;
+    }
+    if (i2c_master_bus_add_device(i2c_bus, &i2c_dev_conf, &dev_handle) != ESP_OK)
+    {
+        ESP_LOGE(__func__, "Failed to add I2C device at address 0x%02X", TC358762_ADDR);
+        return ESP_FAIL;
+    }
+
+    esp_err_t ret = i2c_master_transmit(dev_handle, data_to_send, sizeof(data_to_send), 50);
+    if (ret != ESP_OK)
+    {
+        i2c_master_bus_rm_device(dev_handle);
+        return ret;
+    }
+
+    i2c_master_bus_rm_device(dev_handle);
+
+    return ESP_OK;
+}
+
+/**
+ * @brief Enable or disable the touch panel via STM32
+ * 
+ * @param lcd_on true to enable LCD, false to disable
+ * @param ctp_on true to enable touch panel, false to disable
+ * @return esp_err_t ESP_OK on success, or an error code on failure
+ */
+static esp_err_t lcd_enable_touch_panel(bool lcd_on, bool ctp_on)
+{
+    IS_LCD_ENABLED = lcd_on;
+    uint8_t val = 0;
+    if (lcd_on) val |= RPI_TOUCH_V2_LCD_RESET_BIT; // deassert LCD reset
+    if (ctp_on) val |= RPI_TOUCH_V2_CTP_RESET_BIT; // deassert CTP reset
+    return tc358762_send_command(RPI_TOUCH_V2_REG_POWERON, val);
+}
+
 /**
  * @brief Initialize LCD brightness control
  * 
@@ -159,47 +240,19 @@ static esp_err_t lcd_brightness_init(void)
  * @param brightness_percent Brightness level (0-100)
  * @return esp_err_t ESP_OK on success, or an error code on failure
  */
-esp_err_t lcd_brightness_set(int brightness_percent)
+esp_err_t lcd_brightness_set(int brightness)
 {
-    if (brightness_percent > 100) {
-        brightness_percent = 100;
-    }
-    if (brightness_percent < 0) {
-        brightness_percent = 0;
-    }
+    if (!IS_LCD_ENABLED) return ESP_FAIL;
 
-    uint8_t data = (uint8_t)(255 * brightness_percent * 0.01);
-    uint8_t chip_addr = 0x45;       // I2C address of the brightness controller
-    uint8_t reg_addr = 0x86;        // Brightness control register
-    uint8_t data_to_send[2] = {reg_addr, data};
-
-    i2c_device_config_t i2c_dev_conf = {
-        .scl_speed_hz = 100 * 1000,
-        .device_address = chip_addr,
-    };
-
-    i2c_master_dev_handle_t dev_handle = NULL;
-    i2c_master_bus_handle_t i2c_bus = esp_i2c_get_handle();
-    if (i2c_bus == NULL) {
-        ESP_LOGE(__func__, "I2C bus handle is NULL");
-        return ESP_FAIL;
+    if (brightness > 31) {
+        brightness = 31;
     }
-    if (i2c_master_bus_add_device(i2c_bus, &i2c_dev_conf, &dev_handle) != ESP_OK)
-    {
-        ESP_LOGE(__func__, "Failed to add I2C device at address 0x%02X", chip_addr);
-        return ESP_FAIL;
+    if (brightness < 0) {
+        brightness = 0;
     }
 
-    esp_err_t ret = i2c_master_transmit(dev_handle, data_to_send, sizeof(data_to_send), 50);
-    if (ret != ESP_OK)
-    {
-        i2c_master_bus_rm_device(dev_handle);
-        return ret;
-    }
-
-    i2c_master_bus_rm_device(dev_handle);
-
-    return ESP_OK;
+    uint8_t val = RPI_TOUCH_V2_PWM_ENABLE | (brightness & RPI_TOUCH_V2_PWM_VALUE_MASK);
+    return tc358762_send_command(RPI_TOUCH_V2_REG_PWM, val);
 }
 
 /**
@@ -219,7 +272,7 @@ esp_err_t lcd_backlight_off(void)
  */
 esp_err_t lcd_backlight_on(void)
 {
-    return lcd_brightness_set(100);
+    return lcd_brightness_set(31);
 }
 
 /**
@@ -302,6 +355,7 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
 
     ESP_RETURN_ON_ERROR(lcd_brightness_init(), __func__, "Brightness init failed");
     ESP_RETURN_ON_ERROR(esp_enable_dsi_phy_power(), __func__, "DSI PHY power failed");
+    ESP_RETURN_ON_ERROR(lcd_enable_touch_panel(true, true), __func__, "Enable lcd power failed");
 
     /* create MIPI DSI bus first, it will initialize the DSI PHY as well */
     esp_lcd_dsi_bus_config_t bus_config = {
@@ -324,14 +378,19 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
 
     esp_lcd_panel_handle_t disp_panel = NULL;
 
-    esp_lcd_dpi_panel_config_t dpi_config = DSI_PANEL_DPI_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB565);
+#if USE_LCD_COLOR_FORMAT_RGB888
+    esp_lcd_dpi_panel_config_t dpi_config = ILI9881C_720_1280_PANEL_60HZ_DPI_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB888);
+#else
+    esp_lcd_dpi_panel_config_t dpi_config = ILI9881C_720_1280_PANEL_60HZ_DPI_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB565);
+#endif
 
     dpi_config.num_fbs = LCD_DPI_BUFFER_NUMS;
 
-    dsi_vendor_config_t vendor_config = {
+    ili9881c_vendor_config_t vendor_config = {
         .mipi_config = {
             .dsi_bus = mipi_dsi_bus,
             .dpi_config = &dpi_config,
+            .lane_num = LCD_MIPI_DSI_LANE_NUM,
         },
     };
     esp_lcd_panel_dev_config_t lcd_dev_config = {
@@ -345,9 +404,10 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
         .reset_gpio_num = LCD_RST_GPIO,
         .vendor_config = &vendor_config,
     };
-    ESP_GOTO_ON_ERROR(esp_lcd_new_panel_dsi(io, &lcd_dev_config, &disp_panel), err, __func__, "New LCD panel Luckfox 5\" failed");
+    ESP_GOTO_ON_ERROR(esp_lcd_new_panel_ili9881c(io, &lcd_dev_config, &disp_panel), err, __func__, "New LCD panel Luckfox 5\" failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_reset(disp_panel), err, __func__, "LCD panel reset failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_init(disp_panel), err, __func__, "LCD panel init failed");
+    ESP_GOTO_ON_ERROR(esp_lcd_panel_disp_on_off(disp_panel, true), err, __func__, "LCD panel ON failed");
 
     /* Return all handles */
     ret_handles->io = io;
@@ -401,13 +461,13 @@ static esp_err_t lcd_touch_new(const lcd_touch_config_t *config, esp_lcd_touch_h
         },
         .flags = {
             .swap_xy = 0,
-            .mirror_x = 1,
-            .mirror_y = 1,
+            .mirror_x = 0,
+            .mirror_y = 0,
         },
     };
     esp_lcd_panel_io_handle_t tp_io_handle = NULL;
     esp_lcd_panel_io_i2c_config_t tp_io_config = {
-        .dev_addr = ESP_LCD_TOUCH_IO_I2C_FT5x06_ADDRESS,
+        .dev_addr = GT911_ADDR,
         .control_phase_bytes = 1,
         .dc_bit_offset = 0,
         .lcd_cmd_bits = 16,
@@ -416,13 +476,13 @@ static esp_err_t lcd_touch_new(const lcd_touch_config_t *config, esp_lcd_touch_h
         },
     };
 
-    tp_io_config.scl_speed_hz = 100000;
+    tp_io_config.scl_speed_hz = 400000;
 
     i2c_master_bus_handle_t i2c_bus = esp_i2c_get_handle();
     ESP_LOGI(__func__, "I2C bus handle: %p", i2c_bus);
     ESP_RETURN_ON_ERROR(esp_lcd_new_panel_io_i2c(i2c_bus, &tp_io_config, &tp_io_handle), __func__, "");
 
-    return esp_lcd_touch_new_i2c_ft5x06(tp_io_handle, &tp_cfg, ret_touch);
+    return esp_lcd_touch_new_i2c_gt911(tp_io_handle, &tp_cfg, ret_touch);
 }
 
 

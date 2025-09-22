@@ -61,9 +61,20 @@ menu "Project Configuration"
                 Select the LCD.
 
             config LUCKFOX_5INCH_DSI_TOUCHSCREEN
-                bool "Luckfox's 5inch DSI-DPI LCD Display"
+                bool "Luckfox 5inch DSI-DPI LCD Display"
+                help 
+                    Luckfox's 5inch DSI-DPI LCD Display (800x480) with touch.
+                    https://www.luckfox.com/products/5-inch-dsi-dpi-lcd-display-with-touch-for-raspberry-pi
             config DFROBOT_5INCH_DSI_TOUCHSCREEN
-                bool "DFRobot's 5inch DSI-DPI LCD Display"
+                bool "DFRobot 5inch DSI-DPI LCD Display"
+                help 
+                    DFRobot's 5inch DSI-DPI LCD Display (800x480) with touch.
+                    https://www.dfrobot.com/product-2625.html
+            config RPI_7INCH_TOUCH_DISPLAY_V2
+                bool "Raspberry Pi 7inch Touch Display V2"
+                help
+                    Raspberry Pi 7inch Touch Display V2 (700x1280) with touch.
+                    https://www.raspberrypi.com/products/raspberry-pi-7-inch-touch-display/
         endchoice
 
         # config ESP_LCD_MIPI_DSI_LANE_BITRATE_MBPS
