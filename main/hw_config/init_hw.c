@@ -9,9 +9,9 @@
  * 
  */
 
+#include "sdkconfig.h"
 #include "init_hw.h"
 #include "driver/gpio.h"
-#include "driver/ledc.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_check.h"
@@ -51,6 +51,12 @@ esp_err_t esp_i2c_init(void)
         .i2c_port = I2C_DSI_PORT,
     };
     ESP_ERROR_CHECK_RETURN_ERR(i2c_new_master_bus(&i2c_bus_conf, &i2c_handle));
+
+    #if CONFIG_ESP_I2C_USE_PULLUPS
+        /* Enable internal pull-ups on I2C lines (helps when external pull-ups are absent/weak) */
+        gpio_pullup_en(I2C_SDA_GPIO);
+        gpio_pullup_en(I2C_SCL_GPIO);
+    #endif // CONFIG_ESP_I2C_USE_PULLUPS
 
     i2c_initialized = true;
     ESP_LOGI(__func__, "I2C initialized successfully on port %d (SCL GPIO: %d, SDA GPIO: %d)", 
@@ -132,3 +138,4 @@ esp_err_t esp_enable_dsi_phy_power(void)
 
     return ESP_OK;
 }
+

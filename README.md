@@ -59,6 +59,7 @@ Planned to be added incrementally as part-time development progresses.
 | DFRobot | [5" DSI (SKU: DFR0550-V2)][id2] | 800x480 | DSI (1-lane) | FT5x06 | :white_check_mark: Works |
 | RaspberyPi | [RPi 7" Touch Display V2][id3] | 720x1280 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
 | Amelin | [7" 1024x600 LCD T D][id4] | 1024x600 | DSI (2-lanes) | GT911 | In progress |
+| BuyDisplay | [5" IPS TFT ER-TFT050-10][id5] | 720x1280 | DSI (2-lanes) | GT911 | In progress |
 | Waveshare | TBD | — | DSI | — | Planned |
 | SeeedStudio | TBD | — | DSI | — | Planned |
 
@@ -68,6 +69,7 @@ Contributions and test reports are welcome.
 [id2]: https://www.dfrobot.com/product-2791.html
 [id3]: https://www.raspberrypi.com/products/touch-display-2/
 [id4]: https://www.vip-lcd.com/7-Inch-LCD-Touch-Display-Screen-1024-600-LVDS-Interface-with-Touch-Panel-7-0-Inch-Lcd-Module-pd591986658.html
+[id5]: https://www.buydisplay.com/5-inch-720x1280-ips-tft-lcd-display-mipi-interface-ili9881-controller
 
 ## Quick tips for troubleshooting
 
