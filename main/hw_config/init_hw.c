@@ -99,7 +99,30 @@ void i2c_scan(void)
     for (uint8_t addr = 0x03; addr <= 0x77; addr++) {
         esp_err_t err = i2c_master_probe(bus, addr, 50 /* ms */);
         if (err == ESP_OK) {
-            ESP_LOGI(__func__, "Found device at 0x%02X", addr);
+            switch(addr) {
+                case 0x10:
+                    ESP_LOGI(__func__, "Found VEML7700 Ambient Light Sensor at 0x%02X", addr);
+                    break;
+                case 0x5D:
+                case 0x14:
+                    ESP_LOGI(__func__, "Found GT911 Touch Controller at 0x%02X", addr);
+                    break;
+                case 0x18:
+                    ESP_LOGI(__func__, "Found ES8311 Audio codec at 0x%02X", addr);
+                    break;
+                case 0x22:
+                    ESP_LOGI(__func__, "Found FUSB302BMPX USB Type-C Port Controller at 0x%02X", addr);
+                    break;
+                case 0x38:
+                    ESP_LOGI(__func__, "Found FT5x06 Touch Controller at 0x%02X", addr);
+                    break;
+                case 0x46:
+                    ESP_LOGI(__func__, "Found SHT40-CD1B-R3 Sensiron Temperature and Humidity Sensor at 0x%02X", addr);
+                    break;
+                default:
+                    ESP_LOGI(__func__, "Found device at 0x%02X", addr);
+                    break;
+            }
         }
         vTaskDelay(pdMS_TO_TICKS(2));
     }
@@ -138,4 +161,5 @@ esp_err_t esp_enable_dsi_phy_power(void)
 
     return ESP_OK;
 }
+
 

@@ -59,7 +59,7 @@ Planned to be added incrementally as part-time development progresses.
 | DFRobot | [5" DSI (SKU: DFR0550-V2)][id2] | 800x480 | DSI (1-lane) | FT5x06 | :white_check_mark: Works |
 | RaspberyPi | [RPi 7" Touch Display V2][id3] | 720x1280 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
 | Amelin | [7" 1024x600 LCD T D][id4] | 1024x600 | DSI (2-lanes) | GT911 | In progress |
-| BuyDisplay | [5" IPS TFT ER-TFT050-10][id5] | 720x1280 | DSI (2-lanes) | GT911 | In progress |
+| BuyDisplay | [5" IPS TFT ER-TFT050-10][id5] | 720x1280 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
 | Waveshare | TBD | — | DSI | — | Planned |
 | SeeedStudio | TBD | — | DSI | — | Planned |
 

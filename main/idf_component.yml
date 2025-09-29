@@ -21,9 +21,9 @@ dependencies:
   # waveshare/esp_lcd_jd9365_10_1: '*'
   # waveshare/esp_lcd_jd9365_8: '*'
 
-  chmorgan/esp-audio-player:
-    version: 1.0.*
-    public: true
+  # chmorgan/esp-audio-player:
+  #   version: 1.0.*
+  #   public: true
 
   chmorgan/esp-file-iterator:
     version: 1.0.0

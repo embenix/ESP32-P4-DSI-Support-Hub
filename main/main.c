@@ -12,10 +12,11 @@
 #include "init_lcd.h"
 #include "init_hw.h"
 #include "esp_err_check.h"
+#include "esp_lcd_touch.h"
 
 static const char *TAG = "DSI support hub";
 
-/**
+ /**
  * @brief Application entry point
  * 
  */
@@ -34,7 +35,7 @@ void app_main(void)
 
     if (err == ESP_OK) {
         // Use this method to set display rotation if needed
-        // lv_display_set_rotation(display_get_handle(), LV_DISPLAY_ROTATION_90);
+        lv_display_set_rotation(display_get_handle(), LV_DISPLAY_ROTATION_90);
 
 #if CONFIG_RPI_7INCH_TOUCH_DISPLAY_V2 == 1
         lv_display_set_rotation(display_get_handle(), LV_DISPLAY_ROTATION_270);

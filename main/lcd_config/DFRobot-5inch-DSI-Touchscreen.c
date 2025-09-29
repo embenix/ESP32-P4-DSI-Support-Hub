@@ -89,6 +89,7 @@ const char *TAG      = "DFRobot 5\" Touchscreen";
 static esp_lcd_dsi_bus_handle_t mipi_dsi_bus = NULL;
 static lv_indev_t *disp_indev = NULL;
 static lv_display_t *disp = NULL;
+static esp_lcd_touch_handle_t s_touch_handle = NULL;
 
 // Function prototypes
 static lv_display_t *display_lcd_init(void);
@@ -97,6 +98,36 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
 static esp_err_t lcd_touch_new(const lcd_touch_config_t *config, esp_lcd_touch_handle_t *ret_touch);
 static esp_err_t lcd_brightness_init(void);
 
+#if CONFIG_PRINT_TOUCH_EVENTS
+/**
+ * @brief Touch event logger task
+ */
+static void touch_logger_task(void *arg) {
+    esp_lcd_touch_handle_t tp = display_touch_get_handle();
+    const uint8_t max = 5; // supports up to 5 points
+    uint16_t xs[5], ys[5];
+    uint8_t count = 0;
+    for (;;) {
+        if (tp) {
+            esp_lcd_touch_read_data(tp);
+            if (esp_lcd_touch_get_coordinates(tp, xs, ys, NULL, &count, max)) {
+                chalk_printf(CHALK_WHITE, "Touch count: %u,", count);
+                for (uint8_t i = 0; i < count; i++) {
+                    chalk_printf(CHALK_WHITE, " T%u:", i);
+                    chalk_printf(CHALK_GREEN, " x=%u", xs[i]);
+                    chalk_printf(CHALK_BLUE, " y=%u", ys[i]);
+                    if (i < count - 1) {
+                        chalk_printf(CHALK_WHITE, ",");
+                    } else {
+                        chalk_printf(CHALK_WHITE, "\n");
+                    }
+                }
+            }
+        }
+        vTaskDelay(pdMS_TO_TICKS(50));
+    }
+}
+#endif // CONFIG_PRINT_TOUCH_EVENTS 
 
 /**
  * @brief Initialize the LCD
@@ -117,6 +148,11 @@ esp_err_t init_lcd(void)
     ESP_ERROR_CHECK_RETURN_ERR(lcd_brightness_set(50));
 
     ESP_LOGI(__func__, "%s initialized successfully.", LCD_NAME);
+    
+#if CONFIG_PRINT_TOUCH_EVENTS
+    xTaskCreate(touch_logger_task, "touch_logger", 4 * 1024, NULL, 2, NULL);
+#endif
+    
     return ret;
 }
 
@@ -521,7 +557,11 @@ static esp_err_t lcd_touch_new(const lcd_touch_config_t *config, esp_lcd_touch_h
     ESP_LOGI(__func__, "I2C bus handle: %p", i2c_bus);
     ESP_RETURN_ON_ERROR(esp_lcd_new_panel_io_i2c(i2c_bus, &tp_io_config, &tp_io_handle), __func__, "");
 
-    return esp_lcd_touch_new_i2c_ft5x06(tp_io_handle, &tp_cfg, ret_touch);
+    esp_err_t ret = esp_lcd_touch_new_i2c_ft5x06(tp_io_handle, &tp_cfg, ret_touch);
+    if (ret == ESP_OK) {
+        s_touch_handle = *ret_touch;
+    }
+    return ret;
 }
 
 
@@ -544,6 +584,11 @@ static lv_indev_t *esp_display_indev_init(lv_display_t *disp)
     };
 
     return lvgl_port_add_touch(&touch_cfg);
+}
+
+esp_lcd_touch_handle_t display_touch_get_handle(void)
+{
+    return s_touch_handle;
 }
 
 

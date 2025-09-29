@@ -24,6 +24,9 @@
 #include "esp_lvgl_port.h"        // lvgl_port_cfg_t, lv_display_t, lv_indev_t
 #include "esp_lcd_dsi.h"
 #include "soc/soc_caps.h"
+#include "esp_lcd_touch.h"
+#include "cchalk.h"
+
 #if __has_include("esp_lcd_mipi_dsi.h")
 #include "esp_lcd_mipi_dsi.h"     // esp_lcd_dsi_bus_handle_t
 #endif
@@ -60,6 +63,7 @@ typedef struct {
 esp_err_t init_lcd(void);
 lv_indev_t *display_get_input_dev(void);
 lv_display_t *display_get_handle(void);
+esp_lcd_touch_handle_t display_touch_get_handle(void);
 esp_err_t lcd_brightness_set(int brightness);
 esp_err_t lcd_backlight_off(void);
 esp_err_t lcd_backlight_on(void);

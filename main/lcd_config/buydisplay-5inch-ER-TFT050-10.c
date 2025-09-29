@@ -10,7 +10,7 @@
  * @link https://www.buydisplay.com/5-inch-720x1280-ips-tft-lcd-display-mipi-interface-ili9881-controller @endlink
  */
 
-// This file is included only if the Raspberry Pi 7inch Touch Display V2
+// This file is included only if the BuyDisplay 5inch ER-TFT050-10
 // is enabled in the project configuration.
 #include "sdkconfig.h"
 
@@ -23,7 +23,7 @@
 #include "esp_lcd_ili9881c.h"
 
 const char *LCD_NAME = "BuyDisplay 5 inch 720x1280 IPS TFT LCD Display";
-const char *TAG      = "BuyDisplay 5inch ER-TFT050-10";
+const char *TAG      = "BuyDisplay 5 inch ER-TFT050-10";
 
 /* LCD color formats and other configurations */
 #define LCD_COLOR_FORMAT_RGB565         (1)
@@ -56,7 +56,7 @@ const char *TAG      = "BuyDisplay 5inch ER-TFT050-10";
 #define EN_LCD_SW_ROTATE                (1)  // Set to 1 to enable software rotation (90° or 270°)
 #define LCD_DPI_BUFFER_NUMS             (2)  // Number of frame buffers for DPI mode (1 or 2)
 
-#define BUYDISPLAY_5INCH_ER_TFT050_10_CONFIG(px_format)  \
+#define BUYDISPLAY_5INCH_ER_TFT050_10_CONF1(px_format)  \
     {                                                    \
         .dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT,     \
         .dpi_clock_freq_mhz = 80,                        \
@@ -76,7 +76,7 @@ const char *TAG      = "BuyDisplay 5inch ER-TFT050-10";
         .flags.use_dma2d = true,                         \
     }
 
-#define DSI_PANEL_DPI_5_INCH_D_CONFIG(px_format)         \
+#define BUYDISPLAY_5INCH_ER_TFT050_10_CONF2(px_format)         \
     {                                                    \
         .dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT,     \
         .dpi_clock_freq_mhz = 80,                        \
@@ -101,12 +101,252 @@ const char *TAG      = "BuyDisplay 5inch ER-TFT050-10";
 #define LCD_TOUCH_INT_GPIO              (22) // GPIO for LCD touch interrupt
 #define LCD_DATA_BIGENDIAN              (0)
 
-// Goodix GT911 typical 7-bit I2C address
-#define GT911_ADDR                      (0x14)
-
 static esp_lcd_dsi_bus_handle_t mipi_dsi_bus = NULL;
 static lv_indev_t *disp_indev = NULL;
 static lv_display_t *disp = NULL;
+static esp_lcd_touch_handle_t s_touch_handle = NULL;
+
+/* Optional: provide a supplier-specific ILI9881C init sequence.
+ * Set to 1 and fill buydisplay_ili9881c_init[] with the vendor's commands
+ * (type ili9881c_lcd_init_cmd_t) to override the driver's default sequence.
+ * NOTE: Leaving this enabled with an empty array will likely result in a blank display.
+ */
+#define USE_SUPPLIER_ILI9881C_INIT 1
+#if USE_SUPPLIER_ILI9881C_INIT
+static const ili9881c_lcd_init_cmd_t buydisplay_ili9881c_init[] = {
+    // { cmd, data_ptr, data_bytes, delay_ms }
+    // ER-TFT050-10
+    { 0xFF, (uint8_t[]){ 0x98, 0x81, 0x03 }, 3, 0 },
+
+    // GIP_1
+    { 0x01, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x02, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x03, (uint8_t[]){ 0x73 }, 1, 0 },
+    { 0x04, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x05, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x06, (uint8_t[]){ 0x08 }, 1, 0 },
+    { 0x07, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x08, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x09, (uint8_t[]){ 0x1B }, 1, 0 },
+    { 0x0A, (uint8_t[]){ 0x01 }, 1, 0 },
+    { 0x0B, (uint8_t[]){ 0x01 }, 1, 0 },
+    { 0x0C, (uint8_t[]){ 0x0D }, 1, 0 },
+    { 0x0D, (uint8_t[]){ 0x01 }, 1, 0 },
+    { 0x0E, (uint8_t[]){ 0x01 }, 1, 0 },
+    { 0x0F, (uint8_t[]){ 0x26 }, 1, 0 },
+    { 0x10, (uint8_t[]){ 0x26 }, 1, 0 },
+    { 0x11, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x12, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x13, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x14, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x15, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x16, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x17, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x18, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x19, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x1A, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x1B, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x1C, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x1D, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x1E, (uint8_t[]){ 0x40 }, 1, 0 },
+    { 0x1F, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x20, (uint8_t[]){ 0x06 }, 1, 0 },
+    { 0x21, (uint8_t[]){ 0x01 }, 1, 0 },
+    { 0x22, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x23, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x24, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x25, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x26, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x27, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x28, (uint8_t[]){ 0x33 }, 1, 0 },
+    { 0x29, (uint8_t[]){ 0x03 }, 1, 0 },
+    { 0x2A, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x2B, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x2C, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x2D, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x2E, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x2F, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x30, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x31, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x32, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x33, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x34, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x35, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x36, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x37, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x38, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x39, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x3A, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x3B, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x3C, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x3D, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x3E, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x3F, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x40, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x41, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x42, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x43, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x44, (uint8_t[]){ 0x00 }, 1, 0 },
+
+    // GIP_2
+    { 0x50, (uint8_t[]){ 0x01 }, 1, 0 },
+    { 0x51, (uint8_t[]){ 0x23 }, 1, 0 },
+    { 0x52, (uint8_t[]){ 0x45 }, 1, 0 },
+    { 0x53, (uint8_t[]){ 0x67 }, 1, 0 },
+    { 0x54, (uint8_t[]){ 0x89 }, 1, 0 },
+    { 0x55, (uint8_t[]){ 0xAB }, 1, 0 },
+    { 0x56, (uint8_t[]){ 0x01 }, 1, 0 },
+    { 0x57, (uint8_t[]){ 0x23 }, 1, 0 },
+    { 0x58, (uint8_t[]){ 0x45 }, 1, 0 },
+    { 0x59, (uint8_t[]){ 0x67 }, 1, 0 },
+    { 0x5A, (uint8_t[]){ 0x89 }, 1, 0 },
+    { 0x5B, (uint8_t[]){ 0xAB }, 1, 0 },
+    { 0x5C, (uint8_t[]){ 0xCD }, 1, 0 },
+    { 0x5D, (uint8_t[]){ 0xEF }, 1, 0 },
+
+    // GIP_3
+    { 0x5E, (uint8_t[]){ 0x11 }, 1, 0 },
+    { 0x5F, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x60, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x61, (uint8_t[]){ 0x07 }, 1, 0 },
+    { 0x62, (uint8_t[]){ 0x06 }, 1, 0 },
+    { 0x63, (uint8_t[]){ 0x0E }, 1, 0 },
+    { 0x64, (uint8_t[]){ 0x0F }, 1, 0 },
+    { 0x65, (uint8_t[]){ 0x0C }, 1, 0 },
+    { 0x66, (uint8_t[]){ 0x0D }, 1, 0 },
+    { 0x67, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x68, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x69, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x6A, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x6B, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x6C, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x6D, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x6E, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x6F, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x70, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x71, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x72, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x73, (uint8_t[]){ 0x05 }, 1, 0 },
+    { 0x74, (uint8_t[]){ 0x01 }, 1, 0 },
+    { 0x75, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x76, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x77, (uint8_t[]){ 0x07 }, 1, 0 },
+    { 0x78, (uint8_t[]){ 0x06 }, 1, 0 },
+    { 0x79, (uint8_t[]){ 0x0E }, 1, 0 },
+    { 0x7A, (uint8_t[]){ 0x0F }, 1, 0 },
+    { 0x7B, (uint8_t[]){ 0x0C }, 1, 0 },
+    { 0x7C, (uint8_t[]){ 0x0D }, 1, 0 },
+    { 0x7D, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x7E, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x7F, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x80, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x81, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x82, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x83, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x84, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x85, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x86, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x87, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x88, (uint8_t[]){ 0x02 }, 1, 0 },
+    { 0x89, (uint8_t[]){ 0x05 }, 1, 0 },
+    { 0x8A, (uint8_t[]){ 0x01 }, 1, 0 },
+
+    // CMD_Page 4
+    { 0xFF, (uint8_t[]){ 0x98, 0x81, 0x04 }, 3, 0 },
+    // { 0x00, (uint8_t[]){ 0x80 }, 1, 0 },
+    { 0x38, (uint8_t[]){ 0x01 }, 1, 0 },
+    { 0x39, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0x6C, (uint8_t[]){ 0x15 }, 1, 0 },
+    { 0x6E, (uint8_t[]){ 0x1A }, 1, 0 }, // di_pwr_reg=0 VGH clamp 15V
+    { 0x6F, (uint8_t[]){ 0x25 }, 1, 0 }, // reg vcl + VGH pumping ratio 3x VGL=-2x
+    { 0x3A, (uint8_t[]){ 0xA4 }, 1, 0 },
+    { 0x8D, (uint8_t[]){ 0x20 }, 1, 0 }, // VGL clamp -10V
+    { 0x87, (uint8_t[]){ 0xBA }, 1, 0 },
+    { 0x3B, (uint8_t[]){ 0x98 }, 1, 0 },
+
+    // CMD_Page 1
+    { 0xFF, (uint8_t[]){ 0x98, 0x81, 0x01 }, 3, 0 },
+    { 0x22, (uint8_t[]){ 0x0A }, 1, 0 }, // BGR, SS
+    { 0x31, (uint8_t[]){ 0x00 }, 1, 0 }, // column inversion
+    { 0x50, (uint8_t[]){ 0x6B }, 1, 0 }, // VREG1OUT
+    { 0x51, (uint8_t[]){ 0x66 }, 1, 0 }, // VREG2OUT
+    { 0x53, (uint8_t[]){ 0x73 }, 1, 0 }, // VCOM1
+    { 0x55, (uint8_t[]){ 0x8B }, 1, 0 }, // VCOM2
+    { 0x60, (uint8_t[]){ 0x1B }, 1, 0 }, // SDT
+    { 0x61, (uint8_t[]){ 0x01 }, 1, 0 },
+    { 0x62, (uint8_t[]){ 0x0C }, 1, 0 },
+    { 0x63, (uint8_t[]){ 0x00 }, 1, 0 },
+
+    // VP255 Gamma P
+    { 0xA0, (uint8_t[]){ 0x00 }, 1, 0 },
+    // VP251
+    { 0xA1, (uint8_t[]){ 0x15 }, 1, 0 },
+    // VP247
+    { 0xA2, (uint8_t[]){ 0x1F }, 1, 0 },
+    // VP243
+    { 0xA3, (uint8_t[]){ 0x13 }, 1, 0 },
+    // VP239
+    { 0xA4, (uint8_t[]){ 0x11 }, 1, 0 },
+    // VP231
+    { 0xA5, (uint8_t[]){ 0x21 }, 1, 0 },
+    // VP219
+    { 0xA6, (uint8_t[]){ 0x17 }, 1, 0 },
+    // VP203
+    { 0xA7, (uint8_t[]){ 0x1B }, 1, 0 },
+    // VP175
+    { 0xA8, (uint8_t[]){ 0x6B }, 1, 0 },
+    // VP144
+    { 0xA9, (uint8_t[]){ 0x1E }, 1, 0 },
+    // VP111
+    { 0xAA, (uint8_t[]){ 0x2B }, 1, 0 },
+    // VP80
+    { 0xAB, (uint8_t[]){ 0x5D }, 1, 0 },
+    // VP52
+    { 0xAC, (uint8_t[]){ 0x19 }, 1, 0 },
+    // VP36
+    { 0xAD, (uint8_t[]){ 0x14 }, 1, 0 },
+    // VP24
+    { 0xAE, (uint8_t[]){ 0x4B }, 1, 0 },
+    // VP16
+    { 0xAF, (uint8_t[]){ 0x1D }, 1, 0 },
+    // VP12
+    { 0xB0, (uint8_t[]){ 0x27 }, 1, 0 },
+    // VP8
+    { 0xB1, (uint8_t[]){ 0x49 }, 1, 0 },
+    // VP4
+    { 0xB2, (uint8_t[]){ 0x5D }, 1, 0 },
+    // VP0
+    { 0xB3, (uint8_t[]){ 0x39 }, 1, 0 },
+
+    // VN255 Gamma N
+    { 0xC0, (uint8_t[]){ 0x00 }, 1, 0 },
+    { 0xC1, (uint8_t[]){ 0x01 }, 1, 0 },
+    { 0xC2, (uint8_t[]){ 0x0C }, 1, 0 },
+    { 0xC3, (uint8_t[]){ 0x11 }, 1, 0 },
+    { 0xC4, (uint8_t[]){ 0x15 }, 1, 0 },
+    { 0xC5, (uint8_t[]){ 0x28 }, 1, 0 },
+    { 0xC6, (uint8_t[]){ 0x1B }, 1, 0 },
+    { 0xC7, (uint8_t[]){ 0x1C }, 1, 0 },
+    { 0xC8, (uint8_t[]){ 0x62 }, 1, 0 },
+    { 0xC9, (uint8_t[]){ 0x1C }, 1, 0 },
+    { 0xCA, (uint8_t[]){ 0x29 }, 1, 0 },
+    { 0xCB, (uint8_t[]){ 0x60 }, 1, 0 },
+    { 0xCC, (uint8_t[]){ 0x16 }, 1, 0 },
+    { 0xCD, (uint8_t[]){ 0x17 }, 1, 0 },
+    { 0xCE, (uint8_t[]){ 0x4A }, 1, 0 },
+    { 0xCF, (uint8_t[]){ 0x23 }, 1, 0 },
+    { 0xD0, (uint8_t[]){ 0x24 }, 1, 0 },
+    { 0xD1, (uint8_t[]){ 0x4F }, 1, 0 },
+    { 0xD2, (uint8_t[]){ 0x5F }, 1, 0 },
+    { 0xD3, (uint8_t[]){ 0x39 }, 1, 0 },
+
+    // CMD_Page 0
+    { 0xFF, (uint8_t[]){ 0x98, 0x81, 0x00 }, 3, 0 },
+    { 0x35, NULL, 0, 0 },
+    { 0x11, NULL, 0, 120 }, // delay 120ms after SLPOUT
+    { 0x29, NULL, 0, 0 },
+};
+#endif
 
 // Function prototypes
 static lv_display_t *display_lcd_init(void);
@@ -131,6 +371,38 @@ static esp_err_t panel_gpio_init_default(void);
 
 static bool panel_gpio_inited = false;
 
+#if CONFIG_PRINT_TOUCH_EVENTS
+/**
+ * @brief Touch event logger task
+ */
+static void touch_logger_task(void *arg) {
+    esp_lcd_touch_handle_t tp = display_touch_get_handle();
+    const uint8_t max = 5; // supports up to 5 points
+    uint16_t xs[5], ys[5];
+    uint8_t count = 0;
+    for (;;) {
+        if (tp) {
+            esp_lcd_touch_read_data(tp);
+            if (esp_lcd_touch_get_coordinates(tp, xs, ys, NULL, &count, max)) {
+                chalk_printf(CHALK_WHITE, "Touch count: %u,", count);
+                for (uint8_t i = 0; i < count; i++) {
+                    chalk_printf(CHALK_WHITE, " T%u:", i);
+                    chalk_printf(CHALK_GREEN, " x=%u", xs[i]);
+                    chalk_printf(CHALK_BLUE, " y=%u", ys[i]);
+                    if (i < count - 1) {
+                        chalk_printf(CHALK_WHITE, ",");
+                    } else {
+                        chalk_printf(CHALK_WHITE, "\n");
+                    }
+                }
+            }
+        }
+        vTaskDelay(pdMS_TO_TICKS(50));
+    }
+}
+
+#endif // CONFIG_PRINT_TOUCH_EVENTS
+
 /**
  * @brief Initialize the LCD
  * 
@@ -150,6 +422,11 @@ esp_err_t init_lcd(void)
     ESP_ERROR_CHECK_RETURN_ERR(lcd_brightness_set(50));
 
     ESP_LOGI(__func__, "%s initialized successfully.", LCD_NAME);
+
+#if CONFIG_PRINT_TOUCH_EVENTS
+    xTaskCreate(touch_logger_task, "touch_logger", 4 * 1024, NULL, 2, NULL);
+#endif
+
     return ret;
 }
 
@@ -194,28 +471,15 @@ static esp_err_t panel_gpio_init_default(void)
         return ESP_OK;
     }
 
-    /* Configure Touch INT (input, pull-up) */
-    gpio_config_t io_conf = {
-        .pin_bit_mask = (1ULL << TOUCH_INT_PIN),
-        .mode = GPIO_MODE_INPUT,
-        .pull_up_en = 1,
+    /* Configure LCD RST (output, default high released) */
+    gpio_config_t io_lcd_conf = {
+        .pin_bit_mask = (1ULL << LCD_RST_PIN),
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = 0,
         .pull_down_en = 0,
         .intr_type = GPIO_INTR_DISABLE,
     };
-    ESP_ERROR_CHECK(gpio_config(&io_conf));
-
-    /* Configure Touch RST (output, default high released) */
-    io_conf.pin_bit_mask = (1ULL << TOUCH_RST_PIN);
-    io_conf.mode = GPIO_MODE_OUTPUT;
-    io_conf.pull_up_en = 0;
-    io_conf.pull_down_en = 0;
-    io_conf.intr_type = GPIO_INTR_DISABLE;
-    ESP_ERROR_CHECK(gpio_config(&io_conf));
-    gpio_set_level(TOUCH_RST_PIN, 1);
-
-    /* Configure LCD RST (output, default high released) */
-    io_conf.pin_bit_mask = (1ULL << LCD_RST_PIN);
-    ESP_ERROR_CHECK(gpio_config(&io_conf));
+    ESP_ERROR_CHECK(gpio_config(&io_lcd_conf));
     gpio_set_level(LCD_RST_PIN, 1);
 
     /* Setup LEDC PWM for backlight on BL_PIN */
@@ -241,6 +505,9 @@ static esp_err_t panel_gpio_init_default(void)
     ESP_ERROR_CHECK(ledc_channel_config(&ch_cfg));
 
     panel_gpio_inited = true;
+
+    ESP_LOGI(__func__, "Panel GPIO initialized successfully");
+
     return ESP_OK;
 }
 
@@ -273,7 +540,7 @@ esp_err_t lcd_brightness_set(int brightness)
  */
 static esp_err_t lcd_brightness_init(void)
 {
-    ESP_RETURN_ON_ERROR(panel_gpio_init_default(), __func__, "Panel GPIO init failed");
+    esp_i2c_init();
     return ESP_OK;
 }
 
@@ -376,6 +643,7 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
     esp_err_t ret = ESP_OK;
 
     ESP_RETURN_ON_ERROR(lcd_brightness_init(), __func__, "Brightness init failed");
+    ESP_RETURN_ON_ERROR(panel_gpio_init_default(), __func__, "Panel GPIO init failed");
     ESP_RETURN_ON_ERROR(esp_enable_dsi_phy_power(), __func__, "DSI PHY power failed");
 
     /* create MIPI DSI bus first, it will initialize the DSI PHY as well */
@@ -400,9 +668,9 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
     esp_lcd_panel_handle_t disp_panel = NULL;
 
 #if USE_LCD_COLOR_FORMAT_RGB888
-    esp_lcd_dpi_panel_config_t dpi_config = BUYDISPLAY_5INCH_ER_TFT050_10_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB888);
+    esp_lcd_dpi_panel_config_t dpi_config = BUYDISPLAY_5INCH_ER_TFT050_10_CONF2(LCD_COLOR_PIXEL_FORMAT_RGB888);
 #else
-    esp_lcd_dpi_panel_config_t dpi_config = BUYDISPLAY_5INCH_ER_TFT050_10_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB565);
+    esp_lcd_dpi_panel_config_t dpi_config = BUYDISPLAY_5INCH_ER_TFT050_10_CONF2(LCD_COLOR_PIXEL_FORMAT_RGB565);
 #endif
 
     dpi_config.num_fbs = LCD_DPI_BUFFER_NUMS;
@@ -414,6 +682,11 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
             .lane_num = LCD_MIPI_DSI_LANE_NUM,
         },
     };
+#if USE_SUPPLIER_ILI9881C_INIT
+    // Attach the supplier-provided init array so the driver uses it instead of its default
+    vendor_config.init_cmds = buydisplay_ili9881c_init;
+    vendor_config.init_cmds_size = sizeof(buydisplay_ili9881c_init) / sizeof(buydisplay_ili9881c_init[0]);
+#endif
     esp_lcd_panel_dev_config_t lcd_dev_config = {
 
 #if USE_LCD_COLOR_FORMAT_RGB888
@@ -488,7 +761,7 @@ static esp_err_t lcd_touch_new(const lcd_touch_config_t *config, esp_lcd_touch_h
     };
     esp_lcd_panel_io_handle_t tp_io_handle = NULL;
     esp_lcd_panel_io_i2c_config_t tp_io_config = {
-        .dev_addr = ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS_BACKUP, //GT911_ADDR,
+        .dev_addr = ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS, // primary GT911 addr (0x5D)
         .control_phase_bytes = 1,
         .dc_bit_offset = 0,
         .lcd_cmd_bits = 16,
@@ -503,7 +776,11 @@ static esp_err_t lcd_touch_new(const lcd_touch_config_t *config, esp_lcd_touch_h
     ESP_LOGI(__func__, "I2C bus handle: %p", i2c_bus);
     ESP_RETURN_ON_ERROR(esp_lcd_new_panel_io_i2c(i2c_bus, &tp_io_config, &tp_io_handle), __func__, "");
 
-    return esp_lcd_touch_new_i2c_gt911(tp_io_handle, &tp_cfg, ret_touch);
+    esp_err_t ret = esp_lcd_touch_new_i2c_gt911(tp_io_handle, &tp_cfg, ret_touch);
+    if (ret == ESP_OK) {
+        s_touch_handle = *ret_touch;
+    }
+    return ret;
 }
 
 
@@ -528,6 +805,15 @@ static lv_indev_t *esp_display_indev_init(lv_display_t *disp)
     return lvgl_port_add_touch(&touch_cfg);
 }
 
+/**
+ * @brief Get the touch handle
+ * 
+ * @return esp_lcd_touch_handle_t Touch handle, or NULL if not initialized
+ */
+esp_lcd_touch_handle_t display_touch_get_handle(void)
+{
+    return s_touch_handle;
+}
 
-#endif // CONFIG_LUCKFOX_5INCH_DSI_TOUCHSCREEN
-// End of file Luckfox-5inch-DSI-Touchscreen.h
+#endif // CONFIG_BUYDISPLAY_5INCH_ER_TFT050_10
+// End of file buydisplay-5inch-ER-TFT050-10.h
