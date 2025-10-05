@@ -23,7 +23,7 @@ idf_component_register(
         "${HARDWARE_CONF_DIR}"
         "${LV_DEMO_DIR}"
     REQUIRES
-        lvgl__lvgl driver
+        lvgl__lvgl driver cchalk
     PRIV_REQUIRES esp_lcd usb spiffs fatfs
 )
 

@@ -46,6 +46,13 @@ menu "Project Configuration"
             default y
             help
                 I2C has two speed modes: normal (100kHz) and fast (400kHz).
+        
+        config ESP_I2C_USE_PULLUPS
+            bool "Use internal pull-ups for I2C"
+            default y
+            help
+                Use internal pull-ups for I2C SDA and SCL lines.
+                External pull-ups are recommended for better signal integrity.
 
         config ESP_I2C_CLK_SPEED_HZ
             int
@@ -75,13 +82,18 @@ menu "Project Configuration"
                 help
                     Raspberry Pi 7inch Touch Display V2 (700x1280) with touch.
                     https://www.raspberrypi.com/products/raspberry-pi-7-inch-touch-display/
+            config BUYDISPLAY_5INCH_ER_TFT050_10
+                bool "BuyDisplay 5inch ER-TFT050-10 720x1280"
+                help
+                    BuyDisplay 5inch ER-TFT050-10 720x1280 with touch.
+                    https://www.buydisplay.com/5-inch-720x1280-ips-tft-lcd-display-mipi-interface-ili9881-controller
             # config AMELIN_EK79007_7INCH_TOUCH_DISPLAY
             #     bool "Amelin EK79007 7inch Touch Display"
             #     help
             #         Amelin EK79007 7inch Touch Display (1024x600) with touch.
             #         Product ID: AML070JGI50-07403L
             #         https://www.vip-lcd.com/7-Inch-LCD-Touch-Display-Screen-1024-600-LVDS-Interface-with-Touch-Panel-7-0-Inch-Lcd-Module-pd591986658.html
-        endchoice
+        endchoice                
 
         # config ESP_LCD_MIPI_DSI_LANE_BITRATE_MBPS
         # int "MIPI DSI lane bitrate (Mbps)"
@@ -93,6 +105,14 @@ menu "Project Configuration"
         #     Try 840, 860, 933, 1000, 1200, 1500.
 
         
+    endmenu
+
+    menu "Log - Debugging"
+        config PRINT_TOUCH_EVENTS
+            bool "Print touch events"
+            default n
+            help
+                Print touch events to the console.
     endmenu
     
 endmenu
