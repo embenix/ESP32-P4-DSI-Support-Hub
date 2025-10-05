@@ -53,7 +53,7 @@ Note: Board selection applies an sdkconfig overlay from `boards/sdkconfig.defaul
 
 Planned to be added incrementally as part-time development progresses.
 
-| Vendor | Model | Resolution | Interface | Touch | Status |
+| Vendor | Model | Resolution (WxH)* | Interface | Touch | Status |
 |-------:|:------|:-----------|:----------|:------|:-------|
 | Luckfox | [5" DSI (SKU: 28560)][id1] | 800x480 | DSI (1-lane) | FT5x06 | :white_check_mark: Works |
 | DFRobot | [5" DSI (SKU: DFR0550-V2)][id2] | 800x480 | DSI (1-lane) | FT5x06 | :white_check_mark: Works |
@@ -62,6 +62,8 @@ Planned to be added incrementally as part-time development progresses.
 | BuyDisplay | [5" IPS TFT ER-TFT050-10][id5] | 720x1280 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
 | Waveshare | TBD | — | DSI | — | Planned |
 | SeeedStudio | TBD | — | DSI | — | Planned |
+
+> *Default Resolution. Display orientation can be changed in the firmware.
 
 Contributions and test reports are welcome.
 
