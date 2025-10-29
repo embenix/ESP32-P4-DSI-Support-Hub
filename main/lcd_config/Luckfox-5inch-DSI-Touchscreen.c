@@ -350,7 +350,7 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
     };
     ESP_RETURN_ON_ERROR(esp_lcd_new_dsi_bus(&bus_config, &mipi_dsi_bus), __func__, "New DSI bus init failed");
 
-    ESP_LOGI(__func__, "Install MIPI DSI LCD control panel");
+    ESP_LOGI(__func__, "Install (Luckfox 5inch) MIPI DSI LCD control panel");
     // we use DBI interface to send LCD commands and parameters
     esp_lcd_panel_io_handle_t io;
     esp_lcd_dbi_io_config_t dbi_config = {

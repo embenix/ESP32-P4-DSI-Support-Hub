@@ -1,28 +1,28 @@
 /**
- * @file rpi-7inch-touch-display-v2.c
+ * @file rpi-5inch-touch-display-v2.c
  * @author Yasir K. Qureshi (embenix.com)
- * @brief Raspberry Pi 7inch Touch Display V2 driver
- * @version 0.2
- * @date 2025-09-22
+ * @brief Raspberry Pi 5inch Touch Display V2 driver
+ * @version 0.1
+ * @date 2025-10-27
  * 
  * @copyright Copyright (c) 2025
  * 
  * @link https://www.raspberrypi.com/documentation/accessories/touch-display-2.html#specifications @endlink
  */
 
-// This file is included only if the Raspberry Pi 7inch Touch Display V2
+// This file is included only if the Raspberry Pi 5inch Touch Display V2
 // is enabled in the project configuration.
 #include "sdkconfig.h"
 
-#if CONFIG_RPI_7INCH_TOUCH_DISPLAY_V2 == 1
+#if CONFIG_RPI_5INCH_TOUCH_DISPLAY_V2 == 1
 
 #include <stdio.h>
 #include "init_lcd.h"
 #include "esp_lcd_touch_gt911.h"
 #include "esp_lcd_ili9881c.h"
 
-const char *LCD_NAME = "Raspberry Pi 7inch Touch Display V2";
-const char *TAG      = "RPi 7\" Touch Display V2";
+const char *LCD_NAME = "Raspberry Pi 5inch Touch Display V2";
+const char *TAG      = "RPi 5\" Touch Display V2";
 
 /* LCD color formats and other configurations */
 #define LCD_COLOR_FORMAT_RGB565         (1)
@@ -55,7 +55,7 @@ const char *TAG      = "RPi 7\" Touch Display V2";
 #define EN_LCD_SW_ROTATE                (1)  // Set to 1 to enable software rotation (90° or 270°)
 #define LCD_DPI_BUFFER_NUMS             (2)  // Number of frame buffers for DPI mode (1 or 2)
 
-#define RPI_7INCH_TOUCH_DISPLAY_V2_CONFIG(px_format) \
+#define RPI_5INCH_TOUCH_DISPLAY_V2_CONFIG(px_format) \
     {                                                      \
         .dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT,       \
         .dpi_clock_freq_mhz = 80,                          \
@@ -65,12 +65,12 @@ const char *TAG      = "RPi 7\" Touch Display V2";
         .video_timing = {                                  \
             .h_size = 720,                                 \
             .v_size = 1280,                                \
-            .hsync_back_porch = 239,                       \
-            .hsync_pulse_width = 50,                       \
-            .hsync_front_porch = 33,                       \
-            .vsync_back_porch = 20,                        \
-            .vsync_pulse_width = 30,                       \
-            .vsync_front_porch = 2,                        \
+            .hsync_back_porch = 105,                       \
+            .hsync_pulse_width = 2,                        \
+            .hsync_front_porch = 110,                      \
+            .vsync_back_porch = 100,                       \
+            .vsync_pulse_width = 2,                        \
+            .vsync_front_porch = 100,                      \
         },                                                 \
         .flags.use_dma2d = true,                           \
     }
@@ -102,7 +102,225 @@ static lv_indev_t *disp_indev = NULL;
 static lv_display_t *disp = NULL;
 static esp_lcd_touch_handle_t s_touch_handle = NULL;
 
-// Function prototypes
+/**
+ * @brief Custom ILI9881C initialization sequence for Raspberry Pi 5" Touch Display V2
+ * 
+ * This sequence is based on the vendor's specifications and is used to initialize the display
+ * with the correct settings for optimal performance.
+ * 
+ */
+#define USE_SUPPLIER_ILI9881C_INIT 1
+#if USE_SUPPLIER_ILI9881C_INIT
+static const ili9881c_lcd_init_cmd_t rpi_custom_ili9881c_init[] = {
+    // Raspberry Pi 5" Touch Display V2 initialization sequence
+    // Derived from rpi_5inch_init[] in panel-ilitek-ili9881c.c
+    
+    // Page 3
+    {0xFF, (const uint8_t[]){0x98, 0x81, 0x03}, 3, 0},
+    {0x01, (const uint8_t[]){0x00}, 1, 0},
+    {0x02, (const uint8_t[]){0x00}, 1, 0},
+    {0x03, (const uint8_t[]){0x73}, 1, 0},
+    {0x04, (const uint8_t[]){0x73}, 1, 0},
+    {0x05, (const uint8_t[]){0x00}, 1, 0},
+    {0x06, (const uint8_t[]){0x06}, 1, 0},
+    {0x07, (const uint8_t[]){0x02}, 1, 0},
+    {0x08, (const uint8_t[]){0x00}, 1, 0},
+    {0x09, (const uint8_t[]){0x01}, 1, 0},
+    {0x0a, (const uint8_t[]){0x01}, 1, 0},
+    {0x0b, (const uint8_t[]){0x01}, 1, 0},
+    {0x0c, (const uint8_t[]){0x01}, 1, 0},
+    {0x0d, (const uint8_t[]){0x01}, 1, 0},
+    {0x0e, (const uint8_t[]){0x01}, 1, 0},
+    {0x0f, (const uint8_t[]){0x01}, 1, 0},
+    {0x10, (const uint8_t[]){0x01}, 1, 0},
+    {0x11, (const uint8_t[]){0x00}, 1, 0},
+    {0x12, (const uint8_t[]){0x00}, 1, 0},
+    {0x13, (const uint8_t[]){0x01}, 1, 0},
+    {0x14, (const uint8_t[]){0x00}, 1, 0},
+    {0x15, (const uint8_t[]){0x00}, 1, 0},
+    {0x16, (const uint8_t[]){0x00}, 1, 0},
+    {0x17, (const uint8_t[]){0x00}, 1, 0},
+    {0x18, (const uint8_t[]){0x00}, 1, 0},
+    {0x19, (const uint8_t[]){0x00}, 1, 0},
+    {0x1a, (const uint8_t[]){0x00}, 1, 0},
+    {0x1b, (const uint8_t[]){0x00}, 1, 0},
+    {0x1c, (const uint8_t[]){0x00}, 1, 0},
+    {0x1d, (const uint8_t[]){0x00}, 1, 0},
+    {0x1e, (const uint8_t[]){0xc0}, 1, 0},
+    {0x1f, (const uint8_t[]){0x80}, 1, 0},
+    {0x20, (const uint8_t[]){0x04}, 1, 0},
+    {0x21, (const uint8_t[]){0x03}, 1, 0},
+    {0x22, (const uint8_t[]){0x00}, 1, 0},
+    {0x23, (const uint8_t[]){0x00}, 1, 0},
+    {0x24, (const uint8_t[]){0x00}, 1, 0},
+    {0x25, (const uint8_t[]){0x00}, 1, 0},
+    {0x26, (const uint8_t[]){0x00}, 1, 0},
+    {0x27, (const uint8_t[]){0x00}, 1, 0},
+    {0x28, (const uint8_t[]){0x33}, 1, 0},
+    {0x29, (const uint8_t[]){0x03}, 1, 0},
+    {0x2a, (const uint8_t[]){0x00}, 1, 0},
+    {0x2b, (const uint8_t[]){0x00}, 1, 0},
+    {0x2c, (const uint8_t[]){0x00}, 1, 0},
+    {0x2d, (const uint8_t[]){0x00}, 1, 0},
+    {0x2e, (const uint8_t[]){0x00}, 1, 0},
+    {0x2f, (const uint8_t[]){0x00}, 1, 0},
+    {0x30, (const uint8_t[]){0x00}, 1, 0},
+    {0x31, (const uint8_t[]){0x00}, 1, 0},
+    {0x32, (const uint8_t[]){0x00}, 1, 0},
+    {0x33, (const uint8_t[]){0x00}, 1, 0},
+    {0x34, (const uint8_t[]){0x03}, 1, 0},
+    {0x35, (const uint8_t[]){0x00}, 1, 0},
+    {0x36, (const uint8_t[]){0x03}, 1, 0},
+    {0x37, (const uint8_t[]){0x00}, 1, 0},
+    {0x38, (const uint8_t[]){0x00}, 1, 0},
+    {0x39, (const uint8_t[]){0x00}, 1, 0},
+    {0x3a, (const uint8_t[]){0x00}, 1, 0},
+    {0x3b, (const uint8_t[]){0x00}, 1, 0},
+    {0x3c, (const uint8_t[]){0x00}, 1, 0},
+    {0x3d, (const uint8_t[]){0x00}, 1, 0},
+    {0x3e, (const uint8_t[]){0x00}, 1, 0},
+    {0x3f, (const uint8_t[]){0x00}, 1, 0},
+    {0x40, (const uint8_t[]){0x00}, 1, 0},
+    {0x41, (const uint8_t[]){0x00}, 1, 0},
+    {0x42, (const uint8_t[]){0x00}, 1, 0},
+    {0x43, (const uint8_t[]){0x00}, 1, 0},
+    {0x44, (const uint8_t[]){0x00}, 1, 0},
+    {0x50, (const uint8_t[]){0x01}, 1, 0},
+    {0x51, (const uint8_t[]){0x23}, 1, 0},
+    {0x52, (const uint8_t[]){0x45}, 1, 0},
+    {0x53, (const uint8_t[]){0x67}, 1, 0},
+    {0x54, (const uint8_t[]){0x89}, 1, 0},
+    {0x55, (const uint8_t[]){0xab}, 1, 0},
+    {0x56, (const uint8_t[]){0x01}, 1, 0},
+    {0x57, (const uint8_t[]){0x23}, 1, 0},
+    {0x58, (const uint8_t[]){0x45}, 1, 0},
+    {0x59, (const uint8_t[]){0x67}, 1, 0},
+    {0x5a, (const uint8_t[]){0x89}, 1, 0},
+    {0x5b, (const uint8_t[]){0xab}, 1, 0},
+    {0x5c, (const uint8_t[]){0xcd}, 1, 0},
+    {0x5d, (const uint8_t[]){0xef}, 1, 0},
+    {0x5e, (const uint8_t[]){0x10}, 1, 0},
+    {0x5f, (const uint8_t[]){0x09}, 1, 0},
+    {0x60, (const uint8_t[]){0x08}, 1, 0},
+    {0x61, (const uint8_t[]){0x0f}, 1, 0},
+    {0x62, (const uint8_t[]){0x0e}, 1, 0},
+    {0x63, (const uint8_t[]){0x0d}, 1, 0},
+    {0x64, (const uint8_t[]){0x0c}, 1, 0},
+    {0x65, (const uint8_t[]){0x02}, 1, 0},
+    {0x66, (const uint8_t[]){0x02}, 1, 0},
+    {0x67, (const uint8_t[]){0x02}, 1, 0},
+    {0x68, (const uint8_t[]){0x02}, 1, 0},
+    {0x69, (const uint8_t[]){0x02}, 1, 0},
+    {0x6a, (const uint8_t[]){0x02}, 1, 0},
+    {0x6b, (const uint8_t[]){0x02}, 1, 0},
+    {0x6c, (const uint8_t[]){0x02}, 1, 0},
+    {0x6d, (const uint8_t[]){0x02}, 1, 0},
+    {0x6e, (const uint8_t[]){0x02}, 1, 0},
+    {0x6f, (const uint8_t[]){0x02}, 1, 0},
+    {0x70, (const uint8_t[]){0x02}, 1, 0},
+    {0x71, (const uint8_t[]){0x06}, 1, 0},
+    {0x72, (const uint8_t[]){0x07}, 1, 0},
+    {0x73, (const uint8_t[]){0x02}, 1, 0},
+    {0x74, (const uint8_t[]){0x02}, 1, 0},
+    {0x75, (const uint8_t[]){0x06}, 1, 0},
+    {0x76, (const uint8_t[]){0x07}, 1, 0},
+    {0x77, (const uint8_t[]){0x0e}, 1, 0},
+    {0x78, (const uint8_t[]){0x0f}, 1, 0},
+    {0x79, (const uint8_t[]){0x0c}, 1, 0},
+    {0x7a, (const uint8_t[]){0x0d}, 1, 0},
+    {0x7b, (const uint8_t[]){0x02}, 1, 0},
+    {0x7c, (const uint8_t[]){0x02}, 1, 0},
+    {0x7d, (const uint8_t[]){0x02}, 1, 0},
+    {0x7e, (const uint8_t[]){0x02}, 1, 0},
+    {0x7f, (const uint8_t[]){0x02}, 1, 0},
+    {0x80, (const uint8_t[]){0x02}, 1, 0},
+    {0x81, (const uint8_t[]){0x02}, 1, 0},
+    {0x82, (const uint8_t[]){0x02}, 1, 0},
+    {0x83, (const uint8_t[]){0x02}, 1, 0},
+    {0x84, (const uint8_t[]){0x02}, 1, 0},
+    {0x85, (const uint8_t[]){0x02}, 1, 0},
+    {0x86, (const uint8_t[]){0x02}, 1, 0},
+    {0x87, (const uint8_t[]){0x09}, 1, 0},
+    {0x88, (const uint8_t[]){0x08}, 1, 0},
+    {0x89, (const uint8_t[]){0x02}, 1, 0},
+    {0x8A, (const uint8_t[]){0x02}, 1, 0},
+    
+    // Page 4
+    {0xFF, (const uint8_t[]){0x98, 0x81, 0x04}, 3, 0},
+    {0x6C, (const uint8_t[]){0x15}, 1, 0},  // Set VCORE voltage = 1.5V
+    {0x6E, (const uint8_t[]){0x2a}, 1, 0},  // di_pwr_reg=0 for power mode 2A
+    {0x6F, (const uint8_t[]){0x33}, 1, 0},  // pumping ratio VGH=3x VGL=-2x (reduced from 0x57 to reduce flickering)
+    {0x3A, (const uint8_t[]){0x24}, 1, 0},  // POWER SAVING (changed from 0xa4 to 0x24 - less aggressive power saving)
+    {0x8D, (const uint8_t[]){0x1a}, 1, 0},  // VGL clamp
+    {0x87, (const uint8_t[]){0xba}, 1, 0},  // ESD
+    {0x26, (const uint8_t[]){0x76}, 1, 0},
+    {0xB2, (const uint8_t[]){0xd1}, 1, 0},
+    
+    // Page 1
+    {0xFF, (const uint8_t[]){0x98, 0x81, 0x01}, 3, 0},
+    {0x22, (const uint8_t[]){0x0A}, 1, 0},  // BGR, SS
+    {0x31, (const uint8_t[]){0x02}, 1, 0},  // Column inversion (changed from 0x00 to 0x02 to reduce flicker)
+    {0x53, (const uint8_t[]){0x35}, 1, 0},  // VCOM
+    {0x55, (const uint8_t[]){0x50}, 1, 0},  // VCOM
+    {0x50, (const uint8_t[]){0xaf}, 1, 0},  // VREG1OUT
+    {0x51, (const uint8_t[]){0xaf}, 1, 0},  // VREG2OUT
+    {0x60, (const uint8_t[]){0x20}, 1, 0},  // SDT (changed from 0x14 to 0x20 for higher frame rate)
+    
+    // Positive Gamma
+    {0xA0, (const uint8_t[]){0x08}, 1, 0},
+    {0xA1, (const uint8_t[]){0x1d}, 1, 0},
+    {0xA2, (const uint8_t[]){0x2c}, 1, 0},
+    {0xA3, (const uint8_t[]){0x14}, 1, 0},
+    {0xA4, (const uint8_t[]){0x19}, 1, 0},
+    {0xA5, (const uint8_t[]){0x2e}, 1, 0},
+    {0xA6, (const uint8_t[]){0x22}, 1, 0},
+    {0xA7, (const uint8_t[]){0x23}, 1, 0},
+    {0xA8, (const uint8_t[]){0x97}, 1, 0},
+    {0xA9, (const uint8_t[]){0x1e}, 1, 0},
+    {0xAA, (const uint8_t[]){0x29}, 1, 0},
+    {0xAB, (const uint8_t[]){0x7b}, 1, 0},
+    {0xAC, (const uint8_t[]){0x18}, 1, 0},
+    {0xAD, (const uint8_t[]){0x17}, 1, 0},
+    {0xAE, (const uint8_t[]){0x4b}, 1, 0},
+    {0xAF, (const uint8_t[]){0x1f}, 1, 0},
+    {0xB0, (const uint8_t[]){0x27}, 1, 0},
+    {0xB1, (const uint8_t[]){0x52}, 1, 0},
+    {0xB2, (const uint8_t[]){0x63}, 1, 0},
+    {0xB3, (const uint8_t[]){0x39}, 1, 0},
+    
+    // Negative Gamma
+    {0xC0, (const uint8_t[]){0x08}, 1, 0},
+    {0xC1, (const uint8_t[]){0x1d}, 1, 0},
+    {0xC2, (const uint8_t[]){0x2c}, 1, 0},
+    {0xC3, (const uint8_t[]){0x14}, 1, 0},
+    {0xC4, (const uint8_t[]){0x19}, 1, 0},
+    {0xC5, (const uint8_t[]){0x2e}, 1, 0},
+    {0xC6, (const uint8_t[]){0x22}, 1, 0},
+    {0xC7, (const uint8_t[]){0x23}, 1, 0},
+    {0xC8, (const uint8_t[]){0x97}, 1, 0},
+    {0xC9, (const uint8_t[]){0x1e}, 1, 0},
+    {0xCA, (const uint8_t[]){0x29}, 1, 0},
+    {0xCB, (const uint8_t[]){0x7b}, 1, 0},
+    {0xCC, (const uint8_t[]){0x18}, 1, 0},
+    {0xCD, (const uint8_t[]){0x17}, 1, 0},
+    {0xCE, (const uint8_t[]){0x4b}, 1, 0},
+    {0xCF, (const uint8_t[]){0x1f}, 1, 0},
+    {0xD0, (const uint8_t[]){0x27}, 1, 0},
+    {0xD1, (const uint8_t[]){0x52}, 1, 0},
+    {0xD2, (const uint8_t[]){0x63}, 1, 0},
+    {0xD3, (const uint8_t[]){0x39}, 1, 0},
+    
+    // Return to Page 0 (standard command set)
+    {0xFF, (const uint8_t[]){0x98, 0x81, 0x00}, 3, 0},
+    
+    // Note: Driver handles SLPOUT (0x11) and DISPON (0x29) automatically
+    {0x00, NULL, 0, 0x96}, // Delay 150ms
+    {0x00, NULL, 0, 0x32}, // Delay 50ms
+    {0x00, NULL, 0, 0},    // End of commands
+};
+#endif
+
+// Forward declarations of static functions
 static lv_display_t *display_lcd_init(void);
 static lv_indev_t *esp_display_indev_init(lv_display_t *disp);
 static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config, esp_lcd_handles_t *ret_handles);
@@ -157,8 +375,8 @@ esp_err_t init_lcd(void)
     disp_indev = esp_display_indev_init(disp);
     ESP_NULL_CHECK(disp_indev, ESP_FAIL);
 
-    /* Initialize backlight to 10 | Range: 0-31 */
-    ESP_ERROR_CHECK_RETURN_ERR(lcd_brightness_set(25));
+    /* Initialize backlight to 20 | Range: 0-31 */
+    ESP_ERROR_CHECK_RETURN_ERR(lcd_brightness_set(20));
 
     ESP_LOGI(__func__, "%s initialized successfully.", LCD_NAME);
     
@@ -393,17 +611,18 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
     ESP_RETURN_ON_ERROR(lcd_brightness_init(), __func__, "Brightness init failed");
     ESP_RETURN_ON_ERROR(esp_enable_dsi_phy_power(), __func__, "DSI PHY power failed");
     ESP_RETURN_ON_ERROR(lcd_enable_touch_panel(true, true), __func__, "Enable lcd power failed");
-
+    
     /* create MIPI DSI bus first, it will initialize the DSI PHY as well */
     esp_lcd_dsi_bus_config_t bus_config = {
         .bus_id = 0,
         .num_data_lanes = LCD_MIPI_DSI_LANE_NUM,
         .phy_clk_src = MIPI_DSI_PHY_CLK_SRC_DEFAULT,
         .lane_bit_rate_mbps = LCD_MIPI_DSI_LANE_BITRATE_MBPS,
+        // .flags.non_continuous_clock = 1,
     };
     ESP_RETURN_ON_ERROR(esp_lcd_new_dsi_bus(&bus_config, &mipi_dsi_bus), __func__, "New DSI bus init failed");
 
-    ESP_LOGI(__func__, "Install (RPi 7inch) MIPI DSI LCD control panel");
+    ESP_LOGI(__func__, "Install (RPi 5inch) MIPI DSI LCD control panel");
     // we use DBI interface to send LCD commands and parameters
     esp_lcd_panel_io_handle_t io;
     esp_lcd_dbi_io_config_t dbi_config = {
@@ -416,9 +635,9 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
     esp_lcd_panel_handle_t disp_panel = NULL;
 
 #if USE_LCD_COLOR_FORMAT_RGB888
-    esp_lcd_dpi_panel_config_t dpi_config = RPI_7INCH_TOUCH_DISPLAY_V2_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB888);
+    esp_lcd_dpi_panel_config_t dpi_config = RPI_5INCH_TOUCH_DISPLAY_V2_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB888);
 #else
-    esp_lcd_dpi_panel_config_t dpi_config = RPI_7INCH_TOUCH_DISPLAY_V2_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB565);
+    esp_lcd_dpi_panel_config_t dpi_config = RPI_5INCH_TOUCH_DISPLAY_V2_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB565);
 #endif
 
     dpi_config.num_fbs = LCD_DPI_BUFFER_NUMS;
@@ -430,6 +649,12 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
             .lane_num = LCD_MIPI_DSI_LANE_NUM,
         },
     };
+#if USE_SUPPLIER_ILI9881C_INIT
+    // Attach the supplier-provided init array so the driver uses it instead of its default
+    vendor_config.init_cmds = rpi_custom_ili9881c_init;
+    vendor_config.init_cmds_size = sizeof(rpi_custom_ili9881c_init) / sizeof(rpi_custom_ili9881c_init[0]);
+#endif
+
     esp_lcd_panel_dev_config_t lcd_dev_config = {
 
 #if USE_LCD_COLOR_FORMAT_RGB888
@@ -445,6 +670,26 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
     ESP_GOTO_ON_ERROR(esp_lcd_panel_reset(disp_panel), err, __func__, "LCD panel reset failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_init(disp_panel), err, __func__, "LCD panel init failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_disp_on_off(disp_panel, true), err, __func__, "LCD panel ON failed");
+
+    // // After esp_lcd_panel_init(disp_panel);
+    // vTaskDelay(pdMS_TO_TICKS(120));  // Post-init settle
+
+    // // Minimal DSI/video cmds for Powertip PH720128T003 (from RPi kernel port)
+    // const uint8_t dsi_cmds[][2] = {
+    //     {0xBA, 0x03},  // DSI 2-lane mode
+    //     {0xBB, 0x10},  // Video mode (non-burst)
+    //     {0x35, 0x00},  // Tearing effect line off
+    //     {0x36, 0x00},  // Memory access: portrait, no mirror (adjust to 0x08 for row inversion if blur)
+    //     {0xB4, 0x02},  // Display inversion off
+    //     {0x3A, 0x55},  // Pixel format RGB565
+    //     {0x11, 0x00},  // Sleep out (redundant but safe)
+    //     {0x29, 0x00},  // Display on
+    // };
+    // for (int i = 0; i < sizeof(dsi_cmds)/sizeof(dsi_cmds[0]); i++) {
+    //     esp_lcd_panel_io_tx_param(io, dsi_cmds[i][0], &dsi_cmds[i][1], 1);
+    //     vTaskDelay(pdMS_TO_TICKS(20));  // 20ms per cmd
+    // }
+    // lcd_brightness_set(20);  // Via expander, after on
 
     /* Return all handles */
     ret_handles->io = io;
@@ -548,11 +793,16 @@ static lv_indev_t *esp_display_indev_init(lv_display_t *disp)
     return lvgl_port_add_touch(&touch_cfg);
 }
 
+/**
+ * @brief Get the touch input handle
+ * 
+ * @return esp_lcd_touch_handle_t Touch handle
+ */
 esp_lcd_touch_handle_t display_touch_get_handle(void)
 {
     return s_touch_handle;
 }
 
 
-#endif // CONFIG_RPI_7INCH_TOUCH_DISPLAY_V2
-// End of file rpi_7inch_touch_v2.c
+#endif // CONFIG_LCD_RPI_5INCH_TOUCH_DISPLAY_V2
+// End of file rpi_5inch_touch_v2.c

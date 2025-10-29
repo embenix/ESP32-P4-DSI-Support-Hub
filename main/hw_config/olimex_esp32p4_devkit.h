@@ -12,7 +12,7 @@
  
 #include "sdkconfig.h"
 
-#if CONFIG_OLIMEX_ESP32_P4_DEVKIT
+#if CONFIG_OLIMEX_ESP32P4_DEVKIT
 
 #ifndef OLIMEX_ESP32P4_DEVKIT_H
 #define OLIMEX_ESP32P4_DEVKIT_H
@@ -50,4 +50,4 @@ esp_err_t olimex_esp32p4_devkit_init(void);
 #endif
 
 #endif // OLIMEX_ESP32P4_DEVKIT_H
-#endif // CONFIG_OLIMEX_ESP32_P4_DEVKIT
+#endif // CONFIG_OLIMEX_ESP32P4_DEVKIT

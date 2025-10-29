@@ -7,29 +7,36 @@ menu "Project Configuration"
             Error check assert the application before returning the error code.
 
     menu "HARDWARE"
-        config ESPRESSIF_ESP32P4_FUNCTION_EV_BOARD
-            bool "ESP32-P4 Function EV Board 1.x.x"
-            default y
+        choice ESP_HW_TYPE
+            prompt "Select Hardware type"
+            default ESPRESSIF_ESP32P4_FUNCTION_EV_BOARD
             help
-                Select this option to use the ESP32-P4 Function EV Board.
+                Select the hardware board you are using.
 
-        config OLIMEX_ESP32P4_DEVKIT
-            bool "Olimex ESP32-P4-DevKit"
-            help
-                Select this option to use the Olimex ESP32-P4-DevKit board.
-                (https://www.olimex.com/Products/IoT/ESP32-P4/ESP32-P4-DevKit/open-source-hardware)
+            config ESPRESSIF_ESP32P4_FUNCTION_EV_BOARD
+                bool "ESP32-P4 Function EV Board 1.x.x"
+                help
+                    Select this option to use the ESP32-P4 Function EV Board.
 
-        config WAVESHARE_ESP32P4_MODULE_DEVKIT
-            bool "Waveshare ESP32-P4-Module-DEV-KIT"
-            help
-                Select this option to use the Waveshare ESP32-P4-Module-DEV-KIT board.
-                (https://www.waveshare.com/esp32-p4-module-dev-kit.htm?sku=30560)
+            config OLIMEX_ESP32P4_DEVKIT
+                bool "Olimex ESP32-P4-DevKit"
+                help
+                    Select this option to use the Olimex ESP32-P4-DevKit board.
+                    (https://www.olimex.com/Products/IoT/ESP32-P4/ESP32-P4-DevKit/open-source-hardware)
 
-        config GUITION_ESP32P4_DEVKIT
-            bool "Guition JC-ESP32P4-M3 DEV Board"
-            help
-                Select this option to use the Guition JC-ESP32P4-M3 DEV Board.
-                (https://www.surenoo.com/products/27872758)
+            config WAVESHARE_ESP32P4_MODULE_DEVKIT
+                bool "Waveshare ESP32-P4-Module-DEV-KIT"
+                help
+                    Select this option to use the Waveshare ESP32-P4-Module-DEV-KIT board.
+                    (https://www.waveshare.com/esp32-p4-module-dev-kit.htm?sku=30560)
+
+            config GUITION_ESP32P4_DEVKIT
+                bool "Guition JC-ESP32P4-M3 DEV Board"
+                help
+                    Select this option to use the Guition JC-ESP32P4-M3 DEV Board.
+                    (https://www.surenoo.com/products/27872758)
+        
+        endchoice
 
     endmenu
 
@@ -65,28 +72,38 @@ menu "Project Configuration"
             prompt "Select LCD type"
             default LUCKFOX_5INCH_DSI_TOUCHSCREEN
             help
-                Select the LCD.
+                Select the LCD display you are using.
 
             config LUCKFOX_5INCH_DSI_TOUCHSCREEN
                 bool "Luckfox 5inch DSI-DPI LCD Display"
                 help 
                     Luckfox's 5inch DSI-DPI LCD Display (800x480) with touch.
                     https://www.luckfox.com/products/5-inch-dsi-dpi-lcd-display-with-touch-for-raspberry-pi
+
             config DFROBOT_5INCH_DSI_TOUCHSCREEN
                 bool "DFRobot 5inch DSI-DPI LCD Display"
                 help 
                     DFRobot's 5inch DSI-DPI LCD Display (800x480) with touch.
                     https://www.dfrobot.com/product-2625.html
+            
+            config RPI_5INCH_TOUCH_DISPLAY_V2
+                bool "Raspberry Pi 5inch Touch Display V2"
+                help
+                    Raspberry Pi 5inch Touch Display V2 (720x1280) with touch.
+                    https://www.raspberrypi.com/products/touch-display-2/
+
             config RPI_7INCH_TOUCH_DISPLAY_V2
                 bool "Raspberry Pi 7inch Touch Display V2"
                 help
-                    Raspberry Pi 7inch Touch Display V2 (700x1280) with touch.
-                    https://www.raspberrypi.com/products/raspberry-pi-7-inch-touch-display/
+                    Raspberry Pi 7inch Touch Display V2 (720x1280) with touch.
+                    https://www.raspberrypi.com/products/touch-display-2/
+            
             config BUYDISPLAY_5INCH_ER_TFT050_10
                 bool "BuyDisplay 5inch ER-TFT050-10 720x1280"
                 help
                     BuyDisplay 5inch ER-TFT050-10 720x1280 with touch.
                     https://www.buydisplay.com/5-inch-720x1280-ips-tft-lcd-display-mipi-interface-ili9881-controller
+
             # config AMELIN_EK79007_7INCH_TOUCH_DISPLAY
             #     bool "Amelin EK79007 7inch Touch Display"
             #     help
