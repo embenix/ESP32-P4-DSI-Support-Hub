@@ -22,10 +22,14 @@
 #include "esp_lvgl_port.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lvgl_port.h"        // lvgl_port_cfg_t, lv_display_t, lv_indev_t
-#include "esp_lcd_dsi.h"
 #include "soc/soc_caps.h"
 #include "esp_lcd_touch.h"
 #include "cchalk.h"
+
+#if (CONFIG_LUCKFOX_5INCH_DSI_TOUCHSCREEN) || \
+    (CONFIG_DFROBOT_5INCH_DSI_TOUCHSCREEN)
+#include "esp_lcd_dsi.h"
+#endif
 
 #if __has_include("esp_lcd_mipi_dsi.h")
 #include "esp_lcd_mipi_dsi.h"     // esp_lcd_dsi_bus_handle_t

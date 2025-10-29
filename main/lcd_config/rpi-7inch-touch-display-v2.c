@@ -17,6 +17,8 @@
 #if CONFIG_RPI_7INCH_TOUCH_DISPLAY_V2 == 1
 
 #include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "init_lcd.h"
 #include "esp_lcd_touch_gt911.h"
 #include "esp_lcd_ili9881c.h"
@@ -65,12 +67,12 @@ const char *TAG      = "RPi 7\" Touch Display V2";
         .video_timing = {                                  \
             .h_size = 720,                                 \
             .v_size = 1280,                                \
-            .hsync_back_porch = 239,                       \
-            .hsync_pulse_width = 50,                       \
-            .hsync_front_porch = 33,                       \
-            .vsync_back_porch = 20,                        \
-            .vsync_pulse_width = 30,                       \
-            .vsync_front_porch = 2,                        \
+            .hsync_back_porch = 50,                        \
+            .hsync_pulse_width = 33,                       \
+            .hsync_front_porch = 239,                      \
+            .vsync_back_porch = 30,                        \
+            .vsync_pulse_width = 2,                        \
+            .vsync_front_porch = 20,                       \
         },                                                 \
         .flags.use_dma2d = true,                           \
     }
@@ -101,6 +103,239 @@ static esp_lcd_dsi_bus_handle_t mipi_dsi_bus = NULL;
 static lv_indev_t *disp_indev = NULL;
 static lv_display_t *disp = NULL;
 static esp_lcd_touch_handle_t s_touch_handle = NULL;
+
+/**
+ * @brief Custom ILI9881C initialization sequence for Raspberry Pi 7" Touch Display V2
+ * 
+ * This sequence is based on the vendor's specifications and is used to initialize the display
+ * with the correct settings for optimal performance.
+ * 
+ */
+#define USE_SUPPLIER_ILI9881C_INIT 1
+#if USE_SUPPLIER_ILI9881C_INIT
+
+#define ILI9881C_CMD_CNDBKxSEL (0xFF)
+#define ILI9881C_CMD_BKxSEL_BYTE0 (0x98)
+#define ILI9881C_CMD_BKxSEL_BYTE1 (0x81)
+#define ILI9881C_CMD_BKxSEL_BYTE2_PAGE0 (0x00)
+#define ILI9881C_CMD_BKxSEL_BYTE2_PAGE1 (0x01)
+#define ILI9881C_CMD_BKxSEL_BYTE2_PAGE2 (0x02)
+#define ILI9881C_CMD_BKxSEL_BYTE2_PAGE3 (0x03)
+#define ILI9881C_CMD_BKxSEL_BYTE2_PAGE4 (0x04)
+
+static const ili9881c_lcd_init_cmd_t rpi_custom_ili9881c_init[] = {
+    // {cmd, { data }, data_size, delay_ms}
+    /**** CMD_Page 3 ****/
+    {ILI9881C_CMD_CNDBKxSEL, (uint8_t[]){ILI9881C_CMD_BKxSEL_BYTE0, ILI9881C_CMD_BKxSEL_BYTE1, ILI9881C_CMD_BKxSEL_BYTE2_PAGE3}, 3, 0},
+    // {0x01, (uint8_t []){0x00}, 1, 0},
+    {0x01, (uint8_t[]){0x00}, 1, 0},
+    {0x02, (uint8_t[]){0x00}, 1, 0},
+    {0x03, (uint8_t[]){0x73}, 1, 0},
+    {0x04, (uint8_t[]){0x00}, 1, 0},
+    {0x05, (uint8_t[]){0x00}, 1, 0},
+    {0x06, (uint8_t[]){0x0A}, 1, 0},
+    {0x07, (uint8_t[]){0x00}, 1, 0},
+    {0x08, (uint8_t[]){0x00}, 1, 0},
+    {0x09, (uint8_t[]){0x01}, 1, 0},
+    {0x0A, (uint8_t[]){0x00}, 1, 0},
+    {0x0B, (uint8_t[]){0x00}, 1, 0},
+    {0x0C, (uint8_t[]){0x01}, 1, 0},
+    {0x0D, (uint8_t[]){0x00}, 1, 0},
+    {0x0E, (uint8_t[]){0x00}, 1, 0},
+    {0x0F, (uint8_t[]){0x1E}, 1, 0},
+    {0x10, (uint8_t[]){0x1E}, 1, 0},
+    {0x11, (uint8_t[]){0x00}, 1, 0},
+    {0x12, (uint8_t[]){0x00}, 1, 0},
+    {0x13, (uint8_t[]){0x00}, 1, 0},
+    {0x14, (uint8_t[]){0x00}, 1, 0},
+    {0x15, (uint8_t[]){0x00}, 1, 0},
+    {0x16, (uint8_t[]){0x00}, 1, 0},
+    {0x17, (uint8_t[]){0x00}, 1, 0},
+    {0x18, (uint8_t[]){0x00}, 1, 0},
+    {0x19, (uint8_t[]){0x00}, 1, 0},
+    {0x1A, (uint8_t[]){0x00}, 1, 0},
+    {0x1B, (uint8_t[]){0x00}, 1, 0},
+    {0x1C, (uint8_t[]){0x00}, 1, 0},
+    {0x1D, (uint8_t[]){0x00}, 1, 0},
+    {0x1E, (uint8_t[]){0x40}, 1, 0},
+    {0x1F, (uint8_t[]){0x80}, 1, 0},
+    {0x20, (uint8_t[]){0x06}, 1, 0},
+    {0x21, (uint8_t[]){0x01}, 1, 0},
+    {0x22, (uint8_t[]){0x00}, 1, 0},
+    {0x23, (uint8_t[]){0x00}, 1, 0},
+    {0x24, (uint8_t[]){0x00}, 1, 0},
+    {0x25, (uint8_t[]){0x00}, 1, 0},
+    {0x26, (uint8_t[]){0x00}, 1, 0},
+    {0x27, (uint8_t[]){0x00}, 1, 0},
+    {0x28, (uint8_t[]){0x33}, 1, 0},
+    {0x29, (uint8_t[]){0x03}, 1, 0},
+    {0x2A, (uint8_t[]){0x00}, 1, 0},
+    {0x2B, (uint8_t[]){0x00}, 1, 0},
+    {0x2C, (uint8_t[]){0x00}, 1, 0},
+    {0x2D, (uint8_t[]){0x00}, 1, 0},
+    {0x2E, (uint8_t[]){0x00}, 1, 0},
+    {0x2F, (uint8_t[]){0x00}, 1, 0},
+    {0x30, (uint8_t[]){0x00}, 1, 0},
+    {0x31, (uint8_t[]){0x00}, 1, 0},
+    {0x32, (uint8_t[]){0x00}, 1, 0},
+    {0x33, (uint8_t[]){0x00}, 1, 0},
+    {0x34, (uint8_t[]){0x04}, 1, 0},
+    {0x35, (uint8_t[]){0x00}, 1, 0},
+    {0x36, (uint8_t[]){0x00}, 1, 0},
+    {0x37, (uint8_t[]){0x00}, 1, 0},
+    {0x38, (uint8_t[]){0x3C}, 1, 0},
+    {0x39, (uint8_t[]){0x00}, 1, 0},
+    {0x3A, (uint8_t[]){0x00}, 1, 0},
+    {0x3B, (uint8_t[]){0x00}, 1, 0},
+    {0x3C, (uint8_t[]){0x00}, 1, 0},
+    {0x3D, (uint8_t[]){0x00}, 1, 0},
+    {0x3E, (uint8_t[]){0x00}, 1, 0},
+    {0x3F, (uint8_t[]){0x00}, 1, 0},
+    {0x40, (uint8_t[]){0x00}, 1, 0},
+    {0x41, (uint8_t[]){0x00}, 1, 0},
+    {0x42, (uint8_t[]){0x00}, 1, 0},
+    {0x43, (uint8_t[]){0x00}, 1, 0},
+    {0x44, (uint8_t[]){0x00}, 1, 0},
+    {0x50, (uint8_t[]){0x10}, 1, 0},
+    {0x51, (uint8_t[]){0x32}, 1, 0},
+    {0x52, (uint8_t[]){0x54}, 1, 0},
+    {0x53, (uint8_t[]){0x76}, 1, 0},
+    {0x54, (uint8_t[]){0x98}, 1, 0},
+    {0x55, (uint8_t[]){0xBA}, 1, 0},
+    {0x56, (uint8_t[]){0x10}, 1, 0},
+    {0x57, (uint8_t[]){0x32}, 1, 0},
+    {0x58, (uint8_t[]){0x54}, 1, 0},
+    {0x59, (uint8_t[]){0x76}, 1, 0},
+    {0x5A, (uint8_t[]){0x98}, 1, 0},
+    {0x5B, (uint8_t[]){0xBA}, 1, 0},
+    {0x5C, (uint8_t[]){0xDC}, 1, 0},
+    {0x5D, (uint8_t[]){0xFE}, 1, 0},
+    {0x5E, (uint8_t[]){0x00}, 1, 0},
+    {0x5F, (uint8_t[]){0x0E}, 1, 0},
+    {0x60, (uint8_t[]){0x0F}, 1, 0},
+    {0x61, (uint8_t[]){0x0C}, 1, 0},
+    {0x62, (uint8_t[]){0x0D}, 1, 0},
+    {0x63, (uint8_t[]){0x06}, 1, 0},
+    {0x64, (uint8_t[]){0x07}, 1, 0},
+    {0x65, (uint8_t[]){0x02}, 1, 0},
+    {0x66, (uint8_t[]){0x02}, 1, 0},
+    {0x67, (uint8_t[]){0x02}, 1, 0},
+    {0x68, (uint8_t[]){0x02}, 1, 0},
+    {0x69, (uint8_t[]){0x01}, 1, 0},
+    {0x6A, (uint8_t[]){0x00}, 1, 0},
+    {0x6B, (uint8_t[]){0x02}, 1, 0},
+    {0x6C, (uint8_t[]){0x15}, 1, 0},
+    {0x6D, (uint8_t[]){0x14}, 1, 0},
+    {0x6E, (uint8_t[]){0x02}, 1, 0},
+    {0x6F, (uint8_t[]){0x02}, 1, 0},
+    {0x70, (uint8_t[]){0x02}, 1, 0},
+    {0x71, (uint8_t[]){0x02}, 1, 0},
+    {0x72, (uint8_t[]){0x02}, 1, 0},
+    {0x73, (uint8_t[]){0x02}, 1, 0},
+    {0x74, (uint8_t[]){0x02}, 1, 0},
+    {0x75, (uint8_t[]){0x0E}, 1, 0},
+    {0x76, (uint8_t[]){0x0F}, 1, 0},
+    {0x77, (uint8_t[]){0x0C}, 1, 0},
+    {0x78, (uint8_t[]){0x0D}, 1, 0},
+    {0x79, (uint8_t[]){0x06}, 1, 0},
+    {0x7A, (uint8_t[]){0x07}, 1, 0},
+    {0x7B, (uint8_t[]){0x02}, 1, 0},
+    {0x7C, (uint8_t[]){0x02}, 1, 0},
+    {0x7D, (uint8_t[]){0x02}, 1, 0},
+    {0x7E, (uint8_t[]){0x02}, 1, 0},
+    {0x7F, (uint8_t[]){0x01}, 1, 0},
+    {0x80, (uint8_t[]){0x00}, 1, 0},
+    {0x81, (uint8_t[]){0x02}, 1, 0},
+    {0x82, (uint8_t[]){0x14}, 1, 0},
+    {0x83, (uint8_t[]){0x15}, 1, 0},
+    {0x84, (uint8_t[]){0x02}, 1, 0},
+    {0x85, (uint8_t[]){0x02}, 1, 0},
+    {0x86, (uint8_t[]){0x02}, 1, 0},
+    {0x87, (uint8_t[]){0x02}, 1, 0},
+    {0x88, (uint8_t[]){0x02}, 1, 0},
+    {0x89, (uint8_t[]){0x02}, 1, 0},
+    {0x8A, (uint8_t[]){0x02}, 1, 0},
+
+    {ILI9881C_CMD_CNDBKxSEL, (uint8_t[]){ILI9881C_CMD_BKxSEL_BYTE0, ILI9881C_CMD_BKxSEL_BYTE1, ILI9881C_CMD_BKxSEL_BYTE2_PAGE4}, 3, 0},
+    {0x38, (uint8_t[]){0x01}, 1, 0},
+    {0x39, (uint8_t[]){0x00}, 1, 0},
+    {0x6C, (uint8_t[]){0x15}, 1, 5},  // VCORE voltage = 1.5V, wait 5ms for voltage to stabilize
+    {0x6E, (uint8_t[]){0x2A}, 1, 0},  // VGH clamp 
+    {0x6F, (uint8_t[]){0x33}, 1, 5},  // pumping ratio VGH=5x VGL=-3x, wait 5ms for pump stabilization
+    {0x3A, (uint8_t[]){0x24}, 1, 15}, // Power saving mode, wait 15ms for full power stabilization
+    {0x8D, (uint8_t[]){0x14}, 1, 0},  // VGL clamp
+    {0x87, (uint8_t[]){0xBA}, 1, 0},  // ESD protection
+    {0x26, (uint8_t[]){0x76}, 1, 0},
+    {0xB2, (uint8_t[]){0xD1}, 1, 5},  // Reload gamma, wait 5ms for gamma to load
+    {0xB5, (uint8_t[]){0x06}, 1, 0},
+    {0X3B, (uint8_t[]){0X98}, 1, 0},
+    {0x35, (uint8_t[]){0x1F}, 1, 5},  // Source EQ control timing, wait 5ms for source driver to stabilize
+    
+    {ILI9881C_CMD_CNDBKxSEL, (uint8_t[]){ILI9881C_CMD_BKxSEL_BYTE0, ILI9881C_CMD_BKxSEL_BYTE1, ILI9881C_CMD_BKxSEL_BYTE2_PAGE1}, 3, 0},
+    {0x22, (uint8_t[]){0x0A}, 1, 0},
+    {0x31, (uint8_t[]){0x00}, 1, 0},
+    {0x53, (uint8_t[]){0x7D}, 1, 0},  // Official Raspberry Pi value for VCOM
+    {0x55, (uint8_t[]){0x8F}, 1, 0},  // Official Raspberry Pi value for VCL
+    {0x40, (uint8_t[]){0x33}, 1, 0},
+    {0x50, (uint8_t[]){0x96}, 1, 0},  // Official Raspberry Pi red gamma
+    {0x51, (uint8_t[]){0x96}, 1, 0},  // Official Raspberry Pi blue gamma
+    {0x60, (uint8_t[]){0x23}, 1, 0},
+    
+    // Positive Gamma (0xA0-0xB3) - Official Raspberry Pi 7" Touch Display V2 values
+    {0xA0, (uint8_t[]){0x08}, 1, 0},
+    {0xA1, (uint8_t[]){0x1D}, 1, 0},
+    {0xA2, (uint8_t[]){0x2A}, 1, 0},
+    {0xA3, (uint8_t[]){0x10}, 1, 0},
+    {0xA4, (uint8_t[]){0x15}, 1, 0},
+    {0xA5, (uint8_t[]){0x28}, 1, 0},
+    {0xA6, (uint8_t[]){0x1C}, 1, 0},
+    {0xA7, (uint8_t[]){0x1D}, 1, 0},
+    {0xA8, (uint8_t[]){0x7E}, 1, 0},
+    {0xA9, (uint8_t[]){0x1D}, 1, 0},
+    {0xAA, (uint8_t[]){0x29}, 1, 0},
+    {0xAB, (uint8_t[]){0x6B}, 1, 0},
+    {0xAC, (uint8_t[]){0x1A}, 1, 0},
+    {0xAD, (uint8_t[]){0x18}, 1, 0},
+    {0xAE, (uint8_t[]){0x4B}, 1, 0},
+    {0xAF, (uint8_t[]){0x20}, 1, 0},
+    {0xB0, (uint8_t[]){0x27}, 1, 0},
+    {0xB1, (uint8_t[]){0x50}, 1, 0},
+    {0xB2, (uint8_t[]){0x64}, 1, 0},
+    {0xB3, (uint8_t[]){0x39}, 1, 0},
+    
+    // Negative Gamma (0xC0-0xD3) - Official Raspberry Pi 7" Touch Display V2 values
+    {0xC0, (uint8_t[]){0x08}, 1, 0},
+    {0xC1, (uint8_t[]){0x1D}, 1, 0},
+    {0xC2, (uint8_t[]){0x2A}, 1, 0},
+    {0xC3, (uint8_t[]){0x10}, 1, 0},
+    {0xC4, (uint8_t[]){0x15}, 1, 0},
+    {0xC5, (uint8_t[]){0x28}, 1, 0},
+    {0xC6, (uint8_t[]){0x1C}, 1, 0},
+    {0xC7, (uint8_t[]){0x1D}, 1, 0},
+    {0xC8, (uint8_t[]){0x7E}, 1, 0},
+    {0xC9, (uint8_t[]){0x1D}, 1, 0},
+    {0xCA, (uint8_t[]){0x29}, 1, 0},
+    {0xCB, (uint8_t[]){0x6B}, 1, 0},
+    {0xCC, (uint8_t[]){0x1A}, 1, 0},
+    {0xCD, (uint8_t[]){0x18}, 1, 0},
+    {0xCE, (uint8_t[]){0x4B}, 1, 0},
+    {0xCF, (uint8_t[]){0x20}, 1, 0},
+    {0xD0, (uint8_t[]){0x27}, 1, 0},
+    {0xD1, (uint8_t[]){0x50}, 1, 0},
+    {0xD2, (uint8_t[]){0x64}, 1, 0},
+    {0xD3, (uint8_t[]){0x39}, 1, 0},
+
+    {ILI9881C_CMD_CNDBKxSEL, (uint8_t[]){ILI9881C_CMD_BKxSEL_BYTE0, ILI9881C_CMD_BKxSEL_BYTE1, ILI9881C_CMD_BKxSEL_BYTE2_PAGE0}, 3, 5},  // Switch to Page 0, wait 5ms
+    {0x3A, (uint8_t[]){0x77}, 1, 0},  // Pixel format RGB888
+    {0x36, (uint8_t[]){0x00}, 1, 0},  // Memory access control
+    {0x35, (uint8_t[]){0x00}, 1, 0},  // Tearing effect line OFF
+    {0x11, (uint8_t[]){0x00}, 0, 150},  // Exit sleep mode, wait 150ms for full panel wake-up and voltage stabilization
+
+    {0x29, (uint8_t[]){0x00}, 0, 100},   // Display ON, wait 100ms for complete image stabilization
+
+    //============ Gamma END===========
+};
+#endif
 
 // Function prototypes
 static lv_display_t *display_lcd_init(void);
@@ -394,6 +629,10 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
     ESP_RETURN_ON_ERROR(esp_enable_dsi_phy_power(), __func__, "DSI PHY power failed");
     ESP_RETURN_ON_ERROR(lcd_enable_touch_panel(true, true), __func__, "Enable lcd power failed");
 
+    /* Critical delay after power-on to allow LCD power rails to fully stabilize */
+    /* This prevents the bright ring artifact at startup by ensuring stable voltages */
+    vTaskDelay(pdMS_TO_TICKS(50));
+
     /* create MIPI DSI bus first, it will initialize the DSI PHY as well */
     esp_lcd_dsi_bus_config_t bus_config = {
         .bus_id = 0,
@@ -430,6 +669,13 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
             .lane_num = LCD_MIPI_DSI_LANE_NUM,
         },
     };
+
+#if USE_SUPPLIER_ILI9881C_INIT
+    // Attach the supplier-provided init array so the driver uses it instead of its default
+    vendor_config.init_cmds = rpi_custom_ili9881c_init;
+    vendor_config.init_cmds_size = sizeof(rpi_custom_ili9881c_init) / sizeof(rpi_custom_ili9881c_init[0]);
+#endif
+
     esp_lcd_panel_dev_config_t lcd_dev_config = {
 
 #if USE_LCD_COLOR_FORMAT_RGB888
@@ -445,6 +691,9 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
     ESP_GOTO_ON_ERROR(esp_lcd_panel_reset(disp_panel), err, __func__, "LCD panel reset failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_init(disp_panel), err, __func__, "LCD panel init failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_disp_on_off(disp_panel, true), err, __func__, "LCD panel ON failed");
+
+    /* Allow display to fully stabilize after initialization - critical for eliminating artifacts */
+    vTaskDelay(pdMS_TO_TICKS(200));
 
     /* Return all handles */
     ret_handles->io = io;

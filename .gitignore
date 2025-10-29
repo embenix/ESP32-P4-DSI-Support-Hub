@@ -78,5 +78,6 @@ managed_components/
 dependencies/
 dependencies.lock
 ignore-me/
+
 # Ignore the .vscode directory
 .vscode/
