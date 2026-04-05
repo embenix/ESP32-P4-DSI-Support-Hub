@@ -23,6 +23,8 @@
 #include "olimex_esp32p4_devkit.h"
 #elif CONFIG_WAVESHARE_ESP32P4_MODULE_DEVKIT
 #include "waveshare_esp32p4_module_devkit.h"
+#elif CONFIG_GUITION_ESP32P4_DEVKIT
+#include "guition_esp32p4_devkit.h"
 #else
 #error "No board configuration selected. Please select a board in the project configuration."
 #endif
