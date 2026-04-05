@@ -32,7 +32,7 @@ const char *TAG      = "RPi 5\" Touch Display V2";
 #define USE_LVGL_FULL_REFRESH           (0)  // Set to 1 to enable full refresh feature in LVGL
 #define USE_LVGL_DIRECT_MODE            (0)  // Set to 1 to enable direct mode feature in LVGL
 
-#define LCD_RGB_ELEMENT_ORDER           (LCD_RGB_ELEMENT_ORDER_BGR)
+#define LCD_RGB_ELEMENT_ORDER           (LCD_RGB_ELEMENT_ORDER_RGB)
 
 #define LCD_H_RES                       (720)
 #define LCD_V_RES                       (1280)
