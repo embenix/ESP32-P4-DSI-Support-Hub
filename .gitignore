@@ -73,11 +73,15 @@ Module.symvers
 Mkfile.old
 dkms.conf
 sdkconfig.old
+sdkconfig
 
+# Ignore managed components (downloaded from ESP registry)
+# Local component overrides in components/ are tracked in git
 managed_components/
 dependencies/
 dependencies.lock
 ignore-me/
+__managed_components__/
 
 # Ignore the .vscode directory
 .vscode/
