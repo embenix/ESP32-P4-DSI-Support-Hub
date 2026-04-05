@@ -33,7 +33,7 @@ const char *TAG      = "DFRobot 5\" Touchscreen";
 #define USE_LVGL_FULL_REFRESH           (0)  // Set to 1 to enable full refresh feature in LVGL
 #define USE_LVGL_DIRECT_MODE            (0)  // Set to 1 to enable direct mode feature in LVGL
 
-#define LCD_COLOR_SPACE                 (ESP_LCD_COLOR_SPACE_RGB)
+#define LCD_RGB_ELEMENT_ORDER           (LCD_RGB_ELEMENT_ORDER_BGR)
 
 #define LCD_H_RES                       (800)
 #define LCD_V_RES                       (480)
@@ -56,12 +56,13 @@ const char *TAG      = "DFRobot 5\" Touchscreen";
 #define EN_LCD_SW_ROTATE                (1)  // Set to 1 to enable software rotation (90° or 270°)
 #define LCD_DPI_BUFFER_NUMS             (2)  // Number of frame buffers for DPI mode (1 or 2)
 
-#define DSI_PANEL_DPI_CONFIG(px_format)              \
+#define DSI_PANEL_DPI_CONFIG(color_fmt)              \
 {                                                    \
     .dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT,     \
     .dpi_clock_freq_mhz = 30,                        \
     .virtual_channel = 0,                            \
-    .pixel_format = px_format,                       \
+    .in_color_format = color_fmt,                    \
+    .out_color_format = color_fmt,                   \
     .num_fbs = 1,                                    \
     .video_timing = {                                \
         .h_size = 800,                               \
@@ -73,7 +74,6 @@ const char *TAG      = "DFRobot 5\" Touchscreen";
         .vsync_pulse_width = 22,                     \
         .vsync_front_porch = 7,                      \
     },                                               \
-    .flags.use_dma2d = true,                         \
 }
 
 #define LCD_RST_GPIO                    (-1) // GPIO for LCD reset
@@ -451,7 +451,7 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
 
     esp_lcd_panel_handle_t disp_panel = NULL;
 
-    esp_lcd_dpi_panel_config_t dpi_config = DSI_PANEL_DPI_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB565);
+    esp_lcd_dpi_panel_config_t dpi_config = DSI_PANEL_DPI_CONFIG(LCD_COLOR_FMT_RGB565);
 
     dpi_config.num_fbs = LCD_DPI_BUFFER_NUMS;
 
@@ -468,13 +468,18 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
 #else
         .bits_per_pixel = 16,
 #endif
-        .rgb_ele_order = LCD_COLOR_SPACE,
+        .rgb_ele_order = LCD_RGB_ELEMENT_ORDER,
         .reset_gpio_num = LCD_RST_GPIO,
         .vendor_config = &vendor_config,
     };
     ESP_GOTO_ON_ERROR(esp_lcd_new_panel_dsi(io, &lcd_dev_config, &disp_panel), err, __func__, "New LCD panel Luckfox 5\" failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_reset(disp_panel), err, __func__, "LCD panel reset failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_init(disp_panel), err, __func__, "LCD panel init failed");
+
+#if USE_LCD_COLOR_FORMAT_RGB888
+    // Enable DMA2D for RGB888 color format
+    ESP_GOTO_ON_ERROR(esp_lcd_dpi_panel_enable_dma2d(disp_panel), err, __func__, "Enable DMA2D failed");
+#endif
 
     /* Return all handles */
     ret_handles->io = io;

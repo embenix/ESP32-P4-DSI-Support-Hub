@@ -21,7 +21,6 @@
 #include "driver/i2c_master.h"
 #include "esp_ldo_regulator.h"
 #include "esp_vfs_fat.h"
-#include "usb/usb_host.h"
 #include "sd_pwr_ctrl_by_on_chip_ldo.h"
 #include "esp_err_check.h"
 

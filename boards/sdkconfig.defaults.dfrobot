@@ -1,0 +1,18 @@
+# Vendor: DFRobot FireBeetle 2 ESP32-P4
+# SPI flash configuration (conservative settings for compatibility)
+CONFIG_SPI_FLASH_SUPPORT_WINBOND_CHIP=y
+
+# Flash size configuration
+# CONFIG_ESPTOOLPY_FLASHSIZE_DETECT=y
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="16MB"
+
+# Flash mode: DIO mode for wider compatibility; switch to QIO only if verified
+CONFIG_ESPTOOLPY_FLASHMODE="dio"
+
+# Flash frequency: 40MHz for stability; can be increased to 80MHz if stable
+CONFIG_ESPTOOLPY_FLASHFREQ_40M=y
+CONFIG_ESPTOOLPY_FLASHFREQ="40m"
+# Alternative for better performance (use if tested and stable):
+# CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+# CONFIG_ESPTOOLPY_FLASHFREQ="80m"

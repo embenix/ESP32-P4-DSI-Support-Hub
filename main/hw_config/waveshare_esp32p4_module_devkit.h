@@ -36,7 +36,6 @@ extern "C" {
 
 // Todo: Define other board-specific configurations here
 
-// Work in progress
 
 /**
  * @brief Initialize the hardware components

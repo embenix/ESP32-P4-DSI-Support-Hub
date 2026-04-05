@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2025
  * 
  * This file contains the function declarations for initializing
- * the hardware components of the ESP32-P4 Function EV Board.
+ * the hardware components of the ESP32-P4 Function EV Boards.
  */
 
 #pragma once
@@ -21,6 +21,8 @@
 #include "espressif_esp32p4_function_ev_board.h"
 #elif CONFIG_OLIMEX_ESP32P4_DEVKIT
 #include "olimex_esp32p4_devkit.h"
+#elif CONFIG_DFROBOT_FIREBEETLE2_ESP32P4
+#include "dfrobot_firebeetle2_esp32p4.h"
 #elif CONFIG_WAVESHARE_ESP32P4_MODULE_DEVKIT
 #include "waveshare_esp32p4_module_devkit.h"
 #elif CONFIG_GUITION_ESP32P4_DEVKIT

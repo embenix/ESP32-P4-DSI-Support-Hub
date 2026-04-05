@@ -24,6 +24,12 @@ menu "Project Configuration"
                     Select this option to use the Olimex ESP32-P4-DevKit board.
                     (https://www.olimex.com/Products/IoT/ESP32-P4/ESP32-P4-DevKit/open-source-hardware)
 
+            config DFROBOT_FIREBEETLE2_ESP32P4
+                bool "DFRobot FireBeetle 2 ESP32-P4"
+                help
+                    Select this option to use the DFRobot FireBeetle 2 ESP32-P4 board.
+                    (https://www.dfrobot.com/product-2841.html)
+
             config WAVESHARE_ESP32P4_MODULE_DEVKIT
                 bool "Waveshare ESP32-P4-Module-DEV-KIT"
                 help

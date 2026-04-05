@@ -34,7 +34,7 @@ const char *TAG      = "RPi 7\" Touch Display V2";
 #define USE_LVGL_FULL_REFRESH           (0)  // Set to 1 to enable full refresh feature in LVGL
 #define USE_LVGL_DIRECT_MODE            (0)  // Set to 1 to enable direct mode feature in LVGL
 
-#define LCD_COLOR_SPACE                 (ESP_LCD_COLOR_SPACE_RGB)
+#define LCD_RGB_ELEMENT_ORDER           (LCD_RGB_ELEMENT_ORDER_BGR)
 
 #define LCD_H_RES                       (720)
 #define LCD_V_RES                       (1280)
@@ -62,7 +62,8 @@ const char *TAG      = "RPi 7\" Touch Display V2";
         .dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT,       \
         .dpi_clock_freq_mhz = 80,                          \
         .virtual_channel = 0,                              \
-        .pixel_format = px_format,                         \
+        .in_color_format = px_format,                      \
+        .out_color_format = px_format,                     \
         .num_fbs = 1,                                      \
         .video_timing = {                                  \
             .h_size = 720,                                 \
@@ -74,7 +75,6 @@ const char *TAG      = "RPi 7\" Touch Display V2";
             .vsync_pulse_width = 2,                        \
             .vsync_front_porch = 20,                       \
         },                                                 \
-        .flags.use_dma2d = true,                           \
     }
 
 #define LCD_RST_GPIO                    (-1) // GPIO for LCD reset
@@ -655,9 +655,9 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
     esp_lcd_panel_handle_t disp_panel = NULL;
 
 #if USE_LCD_COLOR_FORMAT_RGB888
-    esp_lcd_dpi_panel_config_t dpi_config = RPI_7INCH_TOUCH_DISPLAY_V2_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB888);
+    esp_lcd_dpi_panel_config_t dpi_config = RPI_7INCH_TOUCH_DISPLAY_V2_CONFIG(LCD_COLOR_FMT_RGB888);
 #else
-    esp_lcd_dpi_panel_config_t dpi_config = RPI_7INCH_TOUCH_DISPLAY_V2_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB565);
+    esp_lcd_dpi_panel_config_t dpi_config = RPI_7INCH_TOUCH_DISPLAY_V2_CONFIG(LCD_COLOR_FMT_RGB565);
 #endif
 
     dpi_config.num_fbs = LCD_DPI_BUFFER_NUMS;
@@ -683,13 +683,18 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
 #else
         .bits_per_pixel = 16,
 #endif
-        .rgb_ele_order = LCD_COLOR_SPACE,
+        .rgb_ele_order = LCD_RGB_ELEMENT_ORDER,
         .reset_gpio_num = LCD_RST_GPIO,
         .vendor_config = &vendor_config,
     };
     ESP_GOTO_ON_ERROR(esp_lcd_new_panel_ili9881c(io, &lcd_dev_config, &disp_panel), err, __func__, "New LCD panel Luckfox 5\" failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_reset(disp_panel), err, __func__, "LCD panel reset failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_init(disp_panel), err, __func__, "LCD panel init failed");
+
+#if USE_LCD_COLOR_FORMAT_RGB888
+    // Enable DMA2D for RGB888 color format
+    ESP_GOTO_ON_ERROR(esp_lcd_dpi_panel_enable_dma2d(disp_panel), err, __func__, "Enable DMA2D failed");
+#endif
     ESP_GOTO_ON_ERROR(esp_lcd_panel_disp_on_off(disp_panel, true), err, __func__, "LCD panel ON failed");
 
     /* Allow display to fully stabilize after initialization - critical for eliminating artifacts */
