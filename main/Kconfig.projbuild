@@ -103,12 +103,18 @@ menu "Project Configuration"
                 help
                     Raspberry Pi 7inch Touch Display V2 (720x1280) with touch.
                     https://www.raspberrypi.com/products/touch-display-2/
-            
+                    
             config BUYDISPLAY_5INCH_ER_TFT050_10
                 bool "BuyDisplay 5inch ER-TFT050-10 720x1280"
                 help
                     BuyDisplay 5inch ER-TFT050-10 720x1280 with touch.
                     https://www.buydisplay.com/5-inch-720x1280-ips-tft-lcd-display-mipi-interface-ili9881-controller
+        
+            config RPI_7INCH_TOUCH_DISPLAY_V1
+                bool "RPi 7inch Touch Display V1.1 (800x480)"
+                help
+                    Raspberry Pi 7inch Touch Display V1.1 (800x480) with touch.
+                    Earlier version of the Raspberry Pi Touch Display.
 
             # config AMELIN_EK79007_7INCH_TOUCH_DISPLAY
             #     bool "Amelin EK79007 7inch Touch Display"

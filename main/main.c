@@ -39,6 +39,8 @@ void app_main(void)
         lv_display_set_rotation(display_get_handle(), LV_DISPLAY_ROTATION_270);
 #elif CONFIG_RPI_5INCH_TOUCH_DISPLAY_V2 == 1
         lv_display_set_rotation(display_get_handle(), LV_DISPLAY_ROTATION_90);
+// #elif CONFIG_RPI_7INCH_TOUCH_DISPLAY_V1 == 1
+//         lv_display_set_rotation(display_get_handle(), LV_DISPLAY_ROTATION_180);
 #elif CONFIG_BUYDISPLAY_5INCH_ER_TFT050_10 == 1
         lv_display_set_rotation(display_get_handle(), LV_DISPLAY_ROTATION_90); 
 #endif
