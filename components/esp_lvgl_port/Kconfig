@@ -7,4 +7,13 @@ menu "ESP LVGL PORT"
         help
             Enables using PPA for screen rotation.
 
+    config ESP_LVGL_PORT_TASK_STACK_SIZE
+        int "LVGL Port task stack size (bytes)"
+        default 16384
+        help
+            Stack size for the LVGL port task that handles LVGL timers and rendering.
+            Increase this if you see stack overflow errors during widget initialization
+            or when using complex UI elements. Default is 16KB (increased from 7KB to
+            handle printf/logging during demo initialization).
+
 endmenu

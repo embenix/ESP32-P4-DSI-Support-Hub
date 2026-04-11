@@ -100,6 +100,10 @@ Contributions and test reports are welcome.
 
 During bring-up across multiple DSI panels, configuration changes can occasionally leave the panel in an unresponsive state. If you flash the ESP32‑P4 with different DSI settings while the same panel remains connected, the panel might not reflect the new configuration. In that case:
 
+- Fully power-cycle the system (board and display) to clear any latched state in the panel or bridge.
+- If the display shows scrambled frames, review the `LCD_MIPI_DSI_LANE_BITRATE_MBPS` setting and lower it as needed. A typical stable range is 600–1500 Mbps.
+- If the touch controller doesn’t initialize or the LCD (e.g., RPi 7") doesn’t power up, reduce the I2C bus speed. Some panels don’t tolerate higher rates. For example, the Luckfox 5" touch only initialized reliably at ≤100 kHz.
+
 - **Switching ESP-IDF versions**: If you're switching between ESP-IDF v5.5.3 and v6.0 (or vice versa), you **must** perform a clean build to avoid compatibility issues. Delete the following before rebuilding:
   ```bash
   # Clean all cached build artifacts and configuration
@@ -112,9 +116,6 @@ During bring-up across multiple DSI panels, configuration changes can occasional
   ```
   This ensures cached build artifacts, component dependencies, and configuration files from the previous IDF version don't interfere with the new build.
 
-- Fully power-cycle the system (board and display) to clear any latched state in the panel or bridge.
-- If the display shows scrambled frames, review the `LCD_MIPI_DSI_LANE_BITRATE_MBPS` setting and lower it as needed. A typical stable range is 600–1500 Mbps.
-- If the touch controller doesn’t initialize or the LCD (e.g., RPi 7") doesn’t power up, reduce the I2C bus speed. Some panels don’t tolerate higher rates. For example, the Luckfox 5" touch only initialized reliably at ≤100 kHz.
 
 ## Pictures
 

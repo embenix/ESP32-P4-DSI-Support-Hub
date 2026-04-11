@@ -4,6 +4,7 @@
 #include "esp_err.h"
 #include "esp_check.h"
 #include "esp_memory_utils.h"
+#include "esp_heap_caps.h"
 #include "lvgl.h"
 #include "lv_demos.h"
 #include "esp_lvgl_port.h"
@@ -23,9 +24,27 @@ static const char *TAG = "DSI support hub";
 void app_main(void)
 {
     ESP_LOGI(TAG, "Starting DSI Support Hub");
+
+    /* Log PSRAM availability and stats at startup to help with debugging display buffer allocation issues */
+    size_t psram_total = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
+    size_t psram_free = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
+    size_t psram_largest = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
+    if (psram_total > 0) {
+        ESP_LOGI(TAG, "PSRAM available | total: %u bytes, free: %u bytes, largest block: %u bytes",
+                 (unsigned)psram_total,
+                 (unsigned)psram_free,
+                 (unsigned)psram_largest);
+    } else {
+        ESP_LOGW(TAG, "PSRAM not available via heap caps; high-resolution/double-buffer display modes may fail");
+    }
     
     // Initialize LVGL and LCD
     lvgl_port_cfg_t lvgl_port_cfg = ESP_LVGL_PORT_INIT_CONFIG();
+    lvgl_port_cfg.task_priority = 5;
+    lvgl_port_cfg.task_stack = CONFIG_ESP_LVGL_PORT_TASK_STACK_SIZE;  // Use Kconfig value (default 16KB, configurable in menuconfig)
+    lvgl_port_cfg.task_affinity = -1;
+    lvgl_port_cfg.task_max_sleep_ms = 20;
+    lvgl_port_cfg.timer_period_ms = 2;
     lvgl_port_init(&lvgl_port_cfg);
     esp_err_t err = init_lcd();
 

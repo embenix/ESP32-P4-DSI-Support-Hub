@@ -2,8 +2,8 @@
  * @file dfrobot-5inch-dsi-touchscreen.c
  * @author Yasir K. Qureshi (embenix.com)
  * @brief DFRobot 5-inch DSI Touchscreen driver
- * @version 0.2
- * @date 2025-09-22
+ * @version 0.3
+ * @date 2026-04-11
  * 
  * @copyright Copyright (c) 2025
  * 
@@ -47,8 +47,8 @@ const char *TAG      = "DFRobot 5\" Touchscreen";
 #define EN_LCD_BUFF_DMA                 (0) // Set to 0 to allocate frame buffer in internal RAM
 #define EN_LCD_BUFF_SPIRAM              (0) // Set to 0 to allocate frame buffer in internal RAM
 #else
-#define LCD_DRAW_BUFF_SIZE              (LCD_H_RES * 50) // Frame buffer size in pixels
-#define LCD_DRAW_BUFF_DOUBLE            (0)
+#define LCD_DRAW_BUFF_SIZE              (LCD_H_RES * 100) // Frame buffer size in pixels (larger for smoother rendering)
+#define LCD_DRAW_BUFF_DOUBLE            (1)  // Enable double buffering for smoother rendering
 #define EN_LCD_BUFF_DMA                 (1)  // Set to 1 to allocate frame buffer in DMA-capable memory
 #define EN_LCD_BUFF_SPIRAM              (1)  // Set to 1 to allocate frame buffer in SPIRAM (if available)
 #endif
@@ -59,7 +59,7 @@ const char *TAG      = "DFRobot 5\" Touchscreen";
 #define DSI_PANEL_DPI_CONFIG(color_fmt)              \
 {                                                    \
     .dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT,     \
-    .dpi_clock_freq_mhz = 30,                        \
+    .dpi_clock_freq_mhz = 33,                        \
     .virtual_channel = 0,                            \
     .in_color_format = color_fmt,                    \
     .out_color_format = color_fmt,                   \
@@ -150,7 +150,7 @@ esp_err_t init_lcd(void)
     ESP_LOGI(__func__, "%s initialized successfully.", LCD_NAME);
     
 #if CONFIG_PRINT_TOUCH_EVENTS
-    xTaskCreate(touch_logger_task, "touch_logger", 4 * 1024, NULL, 2, NULL);
+    xTaskCreate(touch_logger_task, "touch_logger", 8 * 1024, NULL, 2, NULL); // Increased stack from 4KB to 8KB
 #endif
     
     return ret;

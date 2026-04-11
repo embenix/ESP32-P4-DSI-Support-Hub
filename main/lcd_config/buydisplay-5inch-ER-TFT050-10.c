@@ -48,15 +48,15 @@ const char *TAG      = "BuyDisplay 5 inch ER-TFT050-10";
 
 #if USE_LCD_COLOR_FORMAT_RGB888
 /* RGB888 needs DMA2D path; keep buffers in internal RAM and moderate size */
-#define LCD_DRAW_BUFF_SIZE              (LCD_H_RES * 30)
-#define LCD_DRAW_BUFF_DOUBLE            (0)
+#define LCD_DRAW_BUFF_SIZE              (LCD_H_RES * 40)
+#define LCD_DRAW_BUFF_DOUBLE            (1)
 #define EN_LCD_BUFF_DMA                 (0) // Set to 0 to allocate frame buffer in internal RAM
-#define EN_LCD_BUFF_SPIRAM              (0) // Set to 0 to allocate frame buffer in internal RAM
+#define EN_LCD_BUFF_SPIRAM              (1) // Use PSRAM to reduce internal RAM pressure
 #else
-#define LCD_DRAW_BUFF_SIZE              (LCD_H_RES * 50) // Frame buffer size in pixels
-#define LCD_DRAW_BUFF_DOUBLE            (0)
-#define EN_LCD_BUFF_DMA                 (1)  // Set to 1 to allocate frame buffer in DMA-capable memory
-#define EN_LCD_BUFF_SPIRAM              (1)  // Set to 1 to allocate frame buffer in SPIRAM (if available)
+#define LCD_DRAW_BUFF_SIZE              (LCD_H_RES * 100) // Larger chunk per flush improves throughput on high-res animations
+#define LCD_DRAW_BUFF_DOUBLE            (1)   // Double buffer allows render/flush overlap
+#define EN_LCD_BUFF_DMA                 (1)   // Keep DMA-capable draw buffers
+#define EN_LCD_BUFF_SPIRAM              (1)   // Put draw buffers in PSRAM to avoid internal RAM allocation failures
 #endif
 
 #define EN_LCD_SW_ROTATE                (1)  // Set to 1 to enable software rotation (90° or 270°)

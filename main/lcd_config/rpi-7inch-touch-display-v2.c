@@ -2,8 +2,8 @@
  * @file rpi-7inch-touch-display-v2.c
  * @author Yasir K. Qureshi (embenix.com)
  * @brief Raspberry Pi 7inch Touch Display V2 driver
- * @version 0.2
- * @date 2025-09-22
+ * @version 0.3
+ * @date 2026-04-11
  * 
  * @copyright Copyright (c) 2025
  * 
@@ -30,9 +30,9 @@ const char *TAG      = "RPi 7\" Touch Display V2";
 #define LCD_COLOR_FORMAT_RGB565         (1)
 #define LCD_COLOR_FORMAT_RGB888         (2)  // Works but very slow | better to use RGB565
 #define USE_LCD_COLOR_FORMAT_RGB888     (0)  // Set to 1 to use RGB888, 0 for RGB565
-#define USE_LVGL_AVOID_TEAR             (0)  // Set to 1 to enable avoid tearing feature in LVGL
+#define USE_LVGL_AVOID_TEAR             (0)  // Keep off: avoid-tearing path can stall flush completion on this panel path
 #define USE_LVGL_FULL_REFRESH           (0)  // Set to 1 to enable full refresh feature in LVGL
-#define USE_LVGL_DIRECT_MODE            (0)  // Set to 1 to enable direct mode feature in LVGL
+#define USE_LVGL_DIRECT_MODE            (0)  // Keep partial mode: direct mode can scramble output with SW rotation/PPA on this panel path
 
 #define LCD_RGB_ELEMENT_ORDER           (LCD_RGB_ELEMENT_ORDER_BGR)
 
@@ -43,19 +43,19 @@ const char *TAG      = "RPi 7\" Touch Display V2";
 
 #if USE_LCD_COLOR_FORMAT_RGB888
 /* RGB888 needs DMA2D path; keep buffers in internal RAM and moderate size */
-#define LCD_DRAW_BUFF_SIZE              (LCD_H_RES * 30)
-#define LCD_DRAW_BUFF_DOUBLE            (0)
+#define LCD_DRAW_BUFF_SIZE              (LCD_H_RES * 40)
+#define LCD_DRAW_BUFF_DOUBLE            (1)
 #define EN_LCD_BUFF_DMA                 (0) // Set to 0 to allocate frame buffer in internal RAM
-#define EN_LCD_BUFF_SPIRAM              (0) // Set to 0 to allocate frame buffer in internal RAM
+#define EN_LCD_BUFF_SPIRAM              (1) // Use PSRAM to reduce internal RAM pressure
 #else
-#define LCD_DRAW_BUFF_SIZE              (LCD_H_RES * 50) // Frame buffer size in pixels
-#define LCD_DRAW_BUFF_DOUBLE            (0)
-#define EN_LCD_BUFF_DMA                 (1)  // Set to 1 to allocate frame buffer in DMA-capable memory
-#define EN_LCD_BUFF_SPIRAM              (1)  // Set to 1 to allocate frame buffer in SPIRAM (if available)
+#define LCD_DRAW_BUFF_SIZE              (LCD_H_RES * 100) // Larger chunk per flush improves throughput on high-res animations
+#define LCD_DRAW_BUFF_DOUBLE            (1)   // Double buffer allows render/flush overlap
+#define EN_LCD_BUFF_DMA                 (1)   // Keep DMA-capable draw buffers
+#define EN_LCD_BUFF_SPIRAM              (1)   // Put draw buffers in PSRAM to avoid internal RAM allocation failures
 #endif
 
 #define EN_LCD_SW_ROTATE                (1)  // Set to 1 to enable software rotation (90° or 270°)
-#define LCD_DPI_BUFFER_NUMS             (2)  // Number of frame buffers for DPI mode (1 or 2)
+#define LCD_DPI_BUFFER_NUMS             (2)  // Stable baseline for this panel path
 
 #define RPI_7INCH_TOUCH_DISPLAY_V2_CONFIG(px_format) \
     {                                                      \
