@@ -20,6 +20,7 @@
   !(CONFIG_RPI_7INCH_TOUCH_DISPLAY_V2) && \
   !(CONFIG_SANZAMELIN_EK79007_7INCH_TOUCH_DISPLAY) && \
   !(CONFIG_BUYDISPLAY_5INCH_ER_TFT050_10) && \
+  !(CONFIG_WAVESHARE_ESP32P4_WIFI6_TOUCH_LCD_3_4C) && \
   !(CONFIG_RPI_5INCH_TOUCH_DISPLAY_V2)
 
 static const char *TAG_INIT_LCD = "init_lcd_default";
@@ -30,4 +31,3 @@ WEAK esp_err_t init_lcd(void)
   return ESP_FAIL;
 }
 #endif
-  

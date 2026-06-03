@@ -29,6 +29,11 @@ dependencies:
     rules:
       - if: '$LCD_TYPE == "espressif_ili9881c"'
 
+  esp_lcd_jd9365:
+    version: "*"
+    rules:
+      - if: '$LCD_TYPE == "waveshare_jd9365"'
+
   # Note: esp_lcd_dsi has a patched version in components/esp_lcd_dsi for v6.0
   waveshare/esp_lcd_dsi:
     version: "*"

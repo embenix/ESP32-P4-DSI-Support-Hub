@@ -109,6 +109,12 @@ menu "Project Configuration"
                 help
                     BuyDisplay 5inch ER-TFT050-10 720x1280 with touch.
                     https://www.buydisplay.com/5-inch-720x1280-ips-tft-lcd-display-mipi-interface-ili9881-controller
+
+            config WAVESHARE_ESP32P4_WIFI6_TOUCH_LCD_3_4C
+                bool "Waveshare ESP32-P4-WIFI6-Touch-LCD-3.4C"
+                help
+                    Waveshare ESP32-P4-WIFI6-Touch-LCD-3.4C with 3.4 inch 800x800 MIPI DSI circular LCD and GT911 touch.
+                    https://www.waveshare.com/esp32-p4-wifi6-touch-lcd-3.4c.htm
         
             config RPI_7INCH_TOUCH_DISPLAY_V1
                 bool "RPi 7inch Touch Display V1.1 (800x480)"
