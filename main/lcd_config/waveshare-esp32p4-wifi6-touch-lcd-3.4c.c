@@ -73,7 +73,6 @@ const char *TAG      = "Waveshare 3.4C";
             .vsync_pulse_width = 4,                \
             .vsync_front_porch = 24,               \
         },                                         \
-        .flags.use_dma2d = true,                   \
     }
 
 static esp_lcd_dsi_bus_handle_t mipi_dsi_bus = NULL;
@@ -528,6 +527,10 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
     ESP_GOTO_ON_ERROR(esp_lcd_new_panel_jd9365(io, &lcd_dev_config, &disp_panel), err, __func__, "New LCD panel Waveshare 3.4C failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_reset(disp_panel), err, __func__, "LCD panel reset failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_init(disp_panel), err, __func__, "LCD panel init failed");
+#if USE_LCD_COLOR_FORMAT_RGB888
+    // In ESP-IDF v6+, DMA2D is enabled explicitly after panel init.
+    ESP_GOTO_ON_ERROR(esp_lcd_dpi_panel_enable_dma2d(disp_panel), err, __func__, "Enable DMA2D failed");
+#endif
     ESP_GOTO_ON_ERROR(esp_lcd_panel_disp_on_off(disp_panel, true), err, __func__, "LCD panel ON failed");
 
     ret_handles->io = io;
