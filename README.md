@@ -81,8 +81,8 @@ Planned to be added incrementally as part-time development progresses.
 | RaspberyPi | [RPi 7" Touch Display V1][id6] | 800x480 | DSI (1-lane) | FT5x06 | :white_check_mark: Works |
 | RaspberyPi | [RPi 5" Touch Display V2][id3] | 720x1280 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
 | RaspberyPi | [RPi 7" Touch Display V2][id3] | 720x1280 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
+| Waveshare | [ESP32-P4-WIFI6-Touch-LCD-3.4C][id7] | 800x800 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
 | Amelin | [7" 1024x600 LCD T D][id4] | 1024x600 | DSI (2-lanes) | GT911 | In progress |
-| Waveshare | TBD | — | DSI | — | Planned |
 | SeeedStudio | TBD | — | DSI | — | Planned |
 
 > *Default Resolution. Display orientation can be changed in the firmware.
@@ -95,6 +95,11 @@ Contributions and test reports are welcome.
 [id6]: https://www.raspberrypi.com/products/raspberry-pi-touch-display/
 [id4]: https://www.vip-lcd.com/7-Inch-LCD-Touch-Display-Screen-1024-600-LVDS-Interface-with-Touch-Panel-7-0-Inch-Lcd-Module-pd591986658.html
 [id5]: https://www.buydisplay.com/5-inch-720x1280-ips-tft-lcd-display-mipi-interface-ili9881-controller
+[id7]: https://www.waveshare.com/esp32-p4-wifi6-touch-lcd-3.4c.htm
+
+## Contributors
+
+- Tomasz Witke: added support for Waveshare ESP32-P4-WIFI6-Touch-LCD-3.4C.
 
 ## Quick tips for troubleshooting
 
