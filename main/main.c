@@ -26,6 +26,7 @@ void app_main(void)
     
     // Initialize LVGL and LCD
     lvgl_port_cfg_t lvgl_port_cfg = ESP_LVGL_PORT_INIT_CONFIG();
+    lvgl_port_cfg.task_stack = 12288;
     lvgl_port_init(&lvgl_port_cfg);
     esp_err_t err = init_lcd();
 
