@@ -119,7 +119,8 @@ During bring-up across multiple DSI panels, configuration changes can occasional
 
 - Fully power-cycle the system (board and display) to clear any latched state in the panel or bridge.
 - If the display shows scrambled frames, review the `LCD_MIPI_DSI_LANE_BITRATE_MBPS` setting and lower it as needed. A typical stable range is 600–1500 Mbps.
-- If the touch controller doesn’t initialize or the LCD (e.g., RPi 7") doesn’t power up, reduce the I2C bus speed. Some panels don’t tolerate higher rates. For example, the Luckfox 5" touch only initialized reliably at ≤100 kHz.
+- If the touch controller doesn't initialize or the LCD (e.g., RPi 7") doesn't power up, reduce the I2C bus speed. Some panels don't tolerate higher rates. For example, the Luckfox 5" touch only initialized reliably at ≤100 kHz.
+- **ESP-IDF v6.0 + picolibc linker error**: If you see `can't link soft-float modules with single-float modules` during linking, this is a known toolchain issue (`esp-15.2.0_20251204`) where the picolibc fallback `libc.a` was compiled with double-float extensions while the ESP32-P4 target uses single-float ABI only. Workaround: switch to newlib via `menuconfig → Component config → C Library → Newlib` (the `sdkconfig.defaults` in this repo defaults to newlib to avoid this).
 
 ## Pictures
 
