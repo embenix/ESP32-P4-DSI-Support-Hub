@@ -58,6 +58,11 @@ CONFIG_LV_USE_DEMO_WIDGETS=y
 CONFIG_IDF_EXPERIMENTAL_FEATURES=y
 CONFIG_LV_THEME_DEFAULT_DARK=y
 
+# Use newlib instead of picolibc to avoid float ABI mismatch with ESP-IDF v6.0
+# (esp-15.2.0_20251204 toolchain). See README troubleshooting for details.
+CONFIG_LIBC_NEWLIB=y
+# CONFIG_LIBC_PICOLIBC is not set
+
 # Waveshare ESP32-P4-WIFI6-Touch-LCD-3.4C build defaults
 # CONFIG_ESPRESSIF_ESP32P4_FUNCTION_EV_BOARD is not set
 CONFIG_WAVESHARE_ESP32P4_MODULE_DEVKIT=y
