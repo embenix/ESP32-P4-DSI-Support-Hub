@@ -109,7 +109,7 @@ The simplest way to use this repo as a foundation for your own ESP32-P4 project:
 
 The ESP32-P4 includes a **Pixel-Processing Accelerator (PPA)** that can offload fill, copy, rotate, and scale operations from the CPU. LVGL 9 can use this through its custom draw callback mechanism:
 
-- Enable `CONFIG_LV_USE_DRAW_PPA=y` in `sdkconfig` (or via menuconfig: *Component config → LVGL → Feature configuration → GPU*).
+- Enable `Espressif's PPA accelerator` in `sdkconfig` (via menuconfig: *Component config → LVGL configuration → Rendering configuration → Use Espressif's PPA accelerator*).
 - The `esp_lvgl_port` component wires the PPA renderer automatically when the Kconfig symbol is set — no extra code is required in `main.c`.
 - If the option is not visible, make sure you are on **LVGL ≥ 9.2** and **ESP-IDF ≥ v5.5.3** (both are already required by this repo).
 
