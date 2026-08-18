@@ -111,11 +111,11 @@ The ESP32-P4 includes a **Pixel-Processing Accelerator (PPA)** that can offload 
 
 - Enable `CONFIG_LV_USE_DRAW_PPA=y` in `sdkconfig` (or via menuconfig: *Component config → LVGL → Feature configuration → GPU*).
 - The `esp_lvgl_port` component wires the PPA renderer automatically when the Kconfig symbol is set — no extra code is required in `main.c`.
-- If the option is not visible, make sure you are on **LVGL ≥ 9.2** and **ESP-IDF ≥ v5.5** (both are already required by this repo).
+- If the option is not visible, make sure you are on **LVGL ≥ 9.2** and **ESP-IDF ≥ v5.5.3** (both are already required by this repo).
 
 Enabling PPA typically makes list scrolling and screen transitions noticeably faster because blending and fill operations run in hardware while the CPU is free.
 
-
+## Contributors
 
 - Tomasz Witke: added support for Waveshare ESP32-P4-WIFI6-Touch-LCD-3.4C.
 
