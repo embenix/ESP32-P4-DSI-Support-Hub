@@ -105,7 +105,7 @@ The simplest way to use this repo as a foundation for your own ESP32-P4 project:
 2. **Replace `main/main.c`** with your own application code. The display and touch are initialised before `app_main` reaches your UI code, so you only need to call `lv_timer_handler()` in your main loop (or rely on the LVGL port task that the `esp_lvgl_port` component starts automatically).
 3. **Add your own components** alongside the existing ones — the `CMakeLists.txt` and `idf_component.yml` follow standard ESP-IDF component conventions, so drop your component folder into `components/` or list it in `idf_component.yml` as a managed dependency.
 
-### Hardware acceleration / improving swipe performance
+### Hardware acceleration / improving swipe performance (NOT FULLY TESTED!)
 
 The ESP32-P4 includes a **Pixel-Processing Accelerator (PPA)** that can offload fill, copy, rotate, and scale operations from the CPU. LVGL 9 can use this through its custom draw callback mechanism:
 
