@@ -97,6 +97,24 @@ Contributions and test reports are welcome.
 [id5]: https://www.buydisplay.com/5-inch-720x1280-ips-tft-lcd-display-mipi-interface-ili9881-controller
 [id7]: https://www.waveshare.com/esp32-p4-wifi6-touch-lcd-3.4c.htm
 
+## Incorporating into your own project
+
+The simplest way to use this repo as a foundation for your own ESP32-P4 project:
+
+1. **Copy or fork** this repository and keep only the panel driver(s) you need under `main/lcd_config/` and the board overlay under `boards/` that matches your hardware.
+2. **Replace `main/main.c`** with your own application code. The display and touch are initialised before `app_main` reaches your UI code, so you only need to call `lv_timer_handler()` in your main loop (or rely on the LVGL port task that the `esp_lvgl_port` component starts automatically).
+3. **Add your own components** alongside the existing ones — the `CMakeLists.txt` and `idf_component.yml` follow standard ESP-IDF component conventions, so drop your component folder into `components/` or list it in `idf_component.yml` as a managed dependency.
+
+### Hardware acceleration / improving swipe performance
+
+The ESP32-P4 includes a **Pixel-Processing Accelerator (PPA)** that can offload fill, copy, rotate, and scale operations from the CPU. LVGL 9 can use this through its custom draw callback mechanism:
+
+- Enable `CONFIG_LV_USE_DRAW_PPA=y` in `sdkconfig` (or via menuconfig: *Component config → LVGL → Feature configuration → GPU*).
+- The `esp_lvgl_port` component wires the PPA renderer automatically when the Kconfig symbol is set — no extra code is required in `main.c`.
+- If the option is not visible, make sure you are on **LVGL ≥ 9.2** and **ESP-IDF ≥ v5.5.3** (both are already required by this repo).
+
+Enabling PPA typically makes list scrolling and screen transitions noticeably faster because blending and fill operations run in hardware while the CPU is free.
+
 ## Contributors
 
 - Tomasz Witke: added support for Waveshare ESP32-P4-WIFI6-Touch-LCD-3.4C.
