@@ -18,6 +18,9 @@
 #if CONFIG_AMELIN_EK79007_7INCH_TOUCH_DISPLAY == 1
 
 #include <stdio.h>
+#include "driver/gpio.h"
+#include "driver/ledc.h"
+#include "esp_idf_version.h"
 #include "init_lcd.h"
 #include "esp_lcd_touch_gt911.h"
 #include "esp_lcd_ek79007.h"
@@ -33,7 +36,11 @@ const char *TAG      = "Amelin EK79007 7\" DSI";
 #define USE_LVGL_FULL_REFRESH           (0)  // Set to 1 to enable full refresh feature in LVGL
 #define USE_LVGL_DIRECT_MODE            (0)  // Set to 1 to enable direct mode feature in LVGL
 
+#if CONFIG_ESPRESSIF_ESP32P4_FUNCTION_EV_BOARD
+#define LCD_RGB_ELEMENT_ORDER           (LCD_RGB_ELEMENT_ORDER_RGB)
+#else
 #define LCD_RGB_ELEMENT_ORDER           (LCD_RGB_ELEMENT_ORDER_BGR)
+#endif
 
 #define LCD_H_RES                       (1024)
 #define LCD_V_RES                       (600)
@@ -56,45 +63,21 @@ const char *TAG      = "Amelin EK79007 7\" DSI";
 #define EN_LCD_SW_ROTATE                (1)  // Set to 1 to enable software rotation (90° or 270°)
 #define LCD_DPI_BUFFER_NUMS             (2)  // Number of frame buffers for DPI mode (1 or 2)
 
-#define AMELIN_EK79007_7INCH_TOUCH_LCD_CONFIG(px_format) \
-    {                                                    \
-        .dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT,     \
-        .dpi_clock_freq_mhz = 48,                        \
-        .virtual_channel = 0,                            \
-        .in_color_format = px_format,       
-        .out_color_format = px_format,                       \
-        .num_fbs = 1,                                    \
-        .video_timing = {                                \
-            .h_size = 1024,                              \
-            .v_size = 600,                               \
-            .hsync_back_porch = 120,                     \
-            .hsync_pulse_width = 10,                     \
-            .hsync_front_porch = 120,                    \
-            .vsync_back_porch = 20,                      \
-            .vsync_pulse_width = 1,                      \
-            .vsync_front_porch = 10,                     \
-        },                                               \
-        
-    }
-
-#define LCD_RST_GPIO                    (-1) // GPIO for LCD reset
-#define LCD_TOUCH_RST_GPIO              (-1) // Shared with LCD reset
+#define LCD_RST_GPIO                    CONFIG_AMELIN_LCD_RESET_GPIO
+#define LCD_TOUCH_RST_GPIO              (-1)
 #define LCD_TOUCH_INT_GPIO              (-1) // GPIO for LCD touch interrupt
 #define LCD_DATA_BIGENDIAN              (0)
 
-// TC358762 bridge configuration
-#define TC358762_ADDR                   (0x45) // 7-bit I2C address of the TC358762 bridge
-#define RPI_TOUCH_V2_REG_ID             (0x01)
-#define RPI_TOUCH_V2_REG_POWERON        (0x02)
-#define RPI_TOUCH_V2_REG_PWM            (0x03)
-
-// REG_POWERON bits
-#define RPI_TOUCH_V2_LCD_RESET_BIT      (1u << 0) // 1 = deassert LCD reset
-#define RPI_TOUCH_V2_CTP_RESET_BIT      (1u << 1) // 1 = deassert Touch reset
-
-// REG_PWM bits
-#define RPI_TOUCH_V2_PWM_ENABLE         (1u << 7)
-#define RPI_TOUCH_V2_PWM_VALUE_MASK     (0x1Fu)      // 5-bit brightness (0..31)
+#if CONFIG_ESPRESSIF_ESP32P4_FUNCTION_EV_BOARD
+#define BL_LEDC_TIMER                   LEDC_TIMER_1
+#define BL_LEDC_CHANNEL                 LEDC_CHANNEL_1
+#else
+#define BL_LEDC_TIMER                   LEDC_TIMER_0
+#define BL_LEDC_CHANNEL                 LEDC_CHANNEL_0
+#endif
+#define BL_LEDC_MODE                    LEDC_LOW_SPEED_MODE
+#define BL_LEDC_FREQ_HZ                 (5000)
+#define BL_LEDC_DUTY_RES                LEDC_TIMER_10_BIT
 
 // Goodix GT911 typical 7-bit I2C address
 #define GT911_ADDR                      (0x5D)
@@ -111,7 +94,7 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
 static esp_err_t lcd_touch_new(const lcd_touch_config_t *config, esp_lcd_touch_handle_t *ret_touch);
 static esp_err_t lcd_brightness_init(void);
 
-static bool IS_LCD_ENABLED = false; // Track if LCD is enabled
+static bool backlight_initialized = false;
 
 #if CONFIG_PRINT_TOUCH_EVENTS
 /**
@@ -124,8 +107,16 @@ static void touch_logger_task(void *arg) {
     uint8_t count = 0;
     for (;;) {
         if (tp) {
-            esp_lcd_touch_read_data(tp);
-            if (esp_lcd_touch_get_coordinates(tp, xs, ys, NULL, &count, max)) {
+            bool touched = false;
+            lvgl_port_lock(0);
+            esp_err_t err = esp_lcd_touch_read_data(tp);
+            if (err == ESP_OK) {
+                touched = esp_lcd_touch_get_coordinates(tp, xs, ys, NULL, &count, max);
+            }
+            lvgl_port_unlock();
+            if (err != ESP_OK) {
+                ESP_LOGW(TAG, "Touch logger read failed: %s", esp_err_to_name(err));
+            } else if (touched) {
                 chalk_printf(CHALK_WHITE, "Touch count: %u,", count);
                 for (uint8_t i = 0; i < count; i++) {
                     chalk_printf(CHALK_WHITE, " T%u:", i);
@@ -159,8 +150,7 @@ esp_err_t init_lcd(void)
     disp_indev = esp_display_indev_init(disp);
     ESP_NULL_CHECK(disp_indev, ESP_FAIL);
 
-    /* Initialize backlight to 10 | Range: 0-31 */
-    ESP_ERROR_CHECK_RETURN_ERR(lcd_brightness_set(25));
+    ESP_ERROR_CHECK_RETURN_ERR(lcd_brightness_set(50));
 
     ESP_LOGI(__func__, "%s initialized successfully.", LCD_NAME);
     
@@ -201,67 +191,6 @@ lv_display_t *display_get_handle(void)
     return disp;
 }
 
-// TC358762 bridge configuration
-static esp_err_t tc358762_send_command(uint8_t cmd, uint8_t data);
-static esp_err_t lcd_enable_touch_panel(bool lcd_on, bool ctp_on);
-
-/**
- * @brief Send a command to the STM32 backlight controller
- * 
- * @return esp_err_t ESP_OK on success, or an error code on failure
- * 
- */
-static esp_err_t tc358762_send_command(uint8_t cmd, uint8_t data)
-{
-    ESP_ERROR_CHECK_RETURN_ERR(esp_i2c_init());
-
-    uint8_t data_to_send[2] = {cmd, data};
-
-    i2c_device_config_t i2c_dev_conf = {
-        .scl_speed_hz = 100 * 1000,
-        .device_address = TC358762_ADDR,
-    };
-
-    i2c_master_dev_handle_t dev_handle = NULL;
-    i2c_master_bus_handle_t i2c_bus = esp_i2c_get_handle();
-    if (i2c_bus == NULL) {
-        ESP_LOGE(__func__, "I2C bus handle is NULL");
-        return ESP_FAIL;
-    }
-    if (i2c_master_bus_add_device(i2c_bus, &i2c_dev_conf, &dev_handle) != ESP_OK)
-    {
-        ESP_LOGE(__func__, "Failed to add I2C device at address 0x%02X", TC358762_ADDR);
-        return ESP_FAIL;
-    }
-
-    esp_err_t ret = i2c_master_transmit(dev_handle, data_to_send, sizeof(data_to_send), 50);
-    if (ret != ESP_OK)
-    {
-        i2c_master_bus_rm_device(dev_handle);
-        return ret;
-    }
-
-    i2c_master_bus_rm_device(dev_handle);
-
-    return ESP_OK;
-}
-
-/**
- * @brief Enable or disable the touch panel via STM32
- * 
- * @param lcd_on true to enable LCD, false to disable
- * @param ctp_on true to enable touch panel, false to disable
- * @return esp_err_t ESP_OK on success, or an error code on failure
- */
-static esp_err_t lcd_enable_touch_panel(bool lcd_on, bool ctp_on)
-{
-    IS_LCD_ENABLED = lcd_on;
-    uint8_t val = 0;
-    if (lcd_on) val |= RPI_TOUCH_V2_LCD_RESET_BIT; // deassert LCD reset
-    if (ctp_on) val |= RPI_TOUCH_V2_CTP_RESET_BIT; // deassert CTP reset
-    return tc358762_send_command(RPI_TOUCH_V2_REG_POWERON, val);
-}
-
 /**
  * @brief Initialize LCD brightness control
  * 
@@ -269,29 +198,58 @@ static esp_err_t lcd_enable_touch_panel(bool lcd_on, bool ctp_on)
  */
 static esp_err_t lcd_brightness_init(void)
 {
-    esp_i2c_init();
+    ESP_RETURN_ON_FALSE(GPIO_IS_VALID_OUTPUT_GPIO(CONFIG_AMELIN_BACKLIGHT_PWM_GPIO),
+                        ESP_ERR_INVALID_ARG, TAG, "Configure a valid backlight PWM GPIO in menuconfig");
+    ESP_RETURN_ON_FALSE(CONFIG_AMELIN_BACKLIGHT_PWM_GPIO != I2C_SDA_GPIO &&
+                        CONFIG_AMELIN_BACKLIGHT_PWM_GPIO != I2C_SCL_GPIO,
+                        ESP_ERR_INVALID_ARG, TAG, "Backlight PWM GPIO conflicts with I2C");
+    ESP_RETURN_ON_FALSE(LCD_RST_GPIO == -1 ||
+                        (GPIO_IS_VALID_OUTPUT_GPIO(LCD_RST_GPIO) &&
+                         LCD_RST_GPIO != I2C_SDA_GPIO && LCD_RST_GPIO != I2C_SCL_GPIO &&
+                         LCD_RST_GPIO != CONFIG_AMELIN_BACKLIGHT_PWM_GPIO),
+                        ESP_ERR_INVALID_ARG, TAG, "Invalid or conflicting LCD reset GPIO");
+
+    const ledc_timer_config_t timer = {
+        .speed_mode = BL_LEDC_MODE,
+        .timer_num = BL_LEDC_TIMER,
+        .freq_hz = BL_LEDC_FREQ_HZ,
+        .duty_resolution = BL_LEDC_DUTY_RES,
+        .clk_cfg = LEDC_AUTO_CLK,
+    };
+    ESP_RETURN_ON_ERROR(ledc_timer_config(&timer), TAG, "Backlight timer configuration failed");
+
+    const ledc_channel_config_t channel = {
+        .gpio_num = CONFIG_AMELIN_BACKLIGHT_PWM_GPIO,
+        .speed_mode = BL_LEDC_MODE,
+        .channel = BL_LEDC_CHANNEL,
+        .intr_type = LEDC_INTR_DISABLE,
+        .timer_sel = BL_LEDC_TIMER,
+        .duty = 0,
+        .hpoint = 0,
+    };
+    ESP_RETURN_ON_ERROR(ledc_channel_config(&channel), TAG, "Backlight channel configuration failed");
+    backlight_initialized = true;
     return ESP_OK;
 }
 
 /**
  * @brief Set the LCD brightness
  * 
- * @param brightness_percent Brightness level (0-100)
+ * @param brightness Brightness level (0-100)
  * @return esp_err_t ESP_OK on success, or an error code on failure
  */
 esp_err_t lcd_brightness_set(int brightness)
 {
-    if (!IS_LCD_ENABLED) return ESP_FAIL;
-
-    if (brightness > 31) {
-        brightness = 31;
-    }
+    ESP_RETURN_ON_FALSE(backlight_initialized, ESP_ERR_INVALID_STATE, TAG, "Backlight is not initialized");
+    if (brightness > 100) brightness = 100;
     if (brightness < 0) {
         brightness = 0;
     }
 
-    uint8_t val = RPI_TOUCH_V2_PWM_ENABLE | (brightness & RPI_TOUCH_V2_PWM_VALUE_MASK);
-    return tc358762_send_command(RPI_TOUCH_V2_REG_PWM, val);
+    uint32_t duty = (((1U << BL_LEDC_DUTY_RES) - 1U) * brightness) / 100U;
+    ESP_RETURN_ON_ERROR(ledc_set_duty(BL_LEDC_MODE, BL_LEDC_CHANNEL, duty), TAG, "Set backlight duty failed");
+    ESP_RETURN_ON_ERROR(ledc_update_duty(BL_LEDC_MODE, BL_LEDC_CHANNEL), TAG, "Update backlight duty failed");
+    return ESP_OK;
 }
 
 /**
@@ -311,7 +269,7 @@ esp_err_t lcd_backlight_off(void)
  */
 esp_err_t lcd_backlight_on(void)
 {
-    return lcd_brightness_set(31);
+    return lcd_brightness_set(100);
 }
 
 /**
@@ -394,7 +352,6 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
 
     ESP_RETURN_ON_ERROR(lcd_brightness_init(), __func__, "Brightness init failed");
     ESP_RETURN_ON_ERROR(esp_enable_dsi_phy_power(), __func__, "DSI PHY power failed");
-    ESP_RETURN_ON_ERROR(lcd_enable_touch_panel(true, true), __func__, "Enable lcd power failed");
 
     /* create MIPI DSI bus first, it will initialize the DSI PHY as well */
     esp_lcd_dsi_bus_config_t bus_config = {
@@ -407,25 +364,32 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
 
     ESP_LOGI(__func__, "Install (Amelin EK79007 7inch) MIPI DSI LCD control panel");
     // we use DBI interface to send LCD commands and parameters
-    esp_lcd_panel_io_handle_t io;
+    esp_lcd_panel_io_handle_t io = NULL;
+    esp_lcd_panel_handle_t disp_panel = NULL;
     esp_lcd_dbi_io_config_t dbi_config = {
         .virtual_channel = 0,
-        .lcd_cmd_bits = 8,   // according to the LCD ILI9881C spec
-        .lcd_param_bits = 8, // according to the LCD ILI9881C spec
+        .lcd_cmd_bits = 8,
+        .lcd_param_bits = 8,
     };
     ESP_GOTO_ON_ERROR(esp_lcd_new_panel_io_dbi(mipi_dsi_bus, &dbi_config, &io), err, __func__, "New panel IO failed");
 
-    esp_lcd_panel_handle_t disp_panel = NULL;
-
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
 #if USE_LCD_COLOR_FORMAT_RGB888
-    esp_lcd_dpi_panel_config_t dpi_config = AMELIN_EK79007_7INCH_TOUCH_LCD_CONFIG(LCD_COLOR_FMT_RGB888);
+    esp_lcd_dpi_panel_config_t dpi_config = EK79007_1024_600_PANEL_60HZ_CONFIG_CF(LCD_COLOR_FMT_RGB888);
 #else
-    esp_lcd_dpi_panel_config_t dpi_config = AMELIN_EK79007_7INCH_TOUCH_LCD_CONFIG(LCD_COLOR_FMT_RGB565);
+    esp_lcd_dpi_panel_config_t dpi_config = EK79007_1024_600_PANEL_60HZ_CONFIG_CF(LCD_COLOR_FMT_RGB565);
+#endif
+#else
+#if USE_LCD_COLOR_FORMAT_RGB888
+    esp_lcd_dpi_panel_config_t dpi_config = EK79007_1024_600_PANEL_60HZ_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB888);
+#else
+    esp_lcd_dpi_panel_config_t dpi_config = EK79007_1024_600_PANEL_60HZ_CONFIG(LCD_COLOR_PIXEL_FORMAT_RGB565);
+#endif
 #endif
 
     dpi_config.num_fbs = LCD_DPI_BUFFER_NUMS;
 
-    ili9881c_vendor_config_t vendor_config = {
+    ek79007_vendor_config_t vendor_config = {
         .mipi_config = {
             .dsi_bus = mipi_dsi_bus,
             .dpi_config = &dpi_config,
@@ -443,15 +407,15 @@ static esp_err_t esp_display_new_with_handles(const lcd_display_config_t *config
         .reset_gpio_num = LCD_RST_GPIO,
         .vendor_config = &vendor_config,
     };
-    ESP_GOTO_ON_ERROR(esp_lcd_new_panel_ili9881c(io, &lcd_dev_config, &disp_panel), err, __func__, "New LCD panel Luckfox 5\" failed");
+    ESP_GOTO_ON_ERROR(esp_lcd_new_panel_ek79007(io, &lcd_dev_config, &disp_panel), err, __func__, "New EK79007 panel failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_reset(disp_panel), err, __func__, "LCD panel reset failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_init(disp_panel), err, __func__, "LCD panel init failed");
 
-#if USE_LCD_COLOR_FORMAT_RGB888
+#if USE_LCD_COLOR_FORMAT_RGB888 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
     // Enable DMA2D for RGB888 color format
     ESP_GOTO_ON_ERROR(esp_lcd_dpi_panel_enable_dma2d(disp_panel), err, __func__, "Enable DMA2D failed");
 #endif
-    ESP_GOTO_ON_ERROR(esp_lcd_panel_disp_on_off(disp_panel, true), err, __func__, "LCD panel ON failed");
+    // EK79007 initialization wakes the panel; its DPI handle has no disp_on_off callback.
 
     /* Return all handles */
     ret_handles->io = io;
@@ -480,6 +444,19 @@ err:
     return ret;
 }
 
+static void lcd_touch_bound_coordinates(esp_lcd_touch_handle_t tp, uint16_t *x, uint16_t *y,
+                                        uint16_t *strength, uint8_t *point_num, uint8_t max_point_num)
+{
+    (void)strength;
+    for (uint8_t i = 0; i < *point_num && i < max_point_num; i++) {
+        if (x[i] > tp->config.x_max || y[i] > tp->config.y_max) {
+            ESP_LOGW(TAG, "Touch coordinate out of range: x=%u y=%u", x[i], y[i]);
+            if (x[i] > tp->config.x_max) x[i] = tp->config.x_max;
+            if (y[i] > tp->config.y_max) y[i] = tp->config.y_max;
+        }
+    }
+}
+
 /**
  * @brief Create a new touch input device
  * 
@@ -494,8 +471,8 @@ static esp_err_t lcd_touch_new(const lcd_touch_config_t *config, esp_lcd_touch_h
 
     /* Initialize touch */
     const esp_lcd_touch_config_t tp_cfg = {
-        .x_max = LCD_H_RES,
-        .y_max = LCD_V_RES,
+        .x_max = LCD_H_RES - 1,
+        .y_max = LCD_V_RES - 1,
 
         .rst_gpio_num = LCD_TOUCH_RST_GPIO,
         .int_gpio_num = LCD_TOUCH_INT_GPIO,
@@ -505,9 +482,10 @@ static esp_err_t lcd_touch_new(const lcd_touch_config_t *config, esp_lcd_touch_h
         },
         .flags = {
             .swap_xy = 0,
-            .mirror_x = 0,
-            .mirror_y = 0,
+            .mirror_x = 1,
+            .mirror_y = 1,
         },
+        .process_coordinates = lcd_touch_bound_coordinates,
     };
     esp_lcd_panel_io_handle_t tp_io_handle = NULL;
     esp_lcd_panel_io_i2c_config_t tp_io_config = {

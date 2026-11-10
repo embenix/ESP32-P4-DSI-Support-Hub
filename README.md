@@ -27,6 +27,7 @@ Modular, trim-to-fit panel support: choose your LCD and keep builds lean by remo
 2. Configure
     - Select your board in menuconfig under: Project Configuration → Hardware Vendor/Board
     - Select your LCD panel: Project Configuration → Display → Panel
+    - For the Amelin display, **Amelin display settings** defaults to backlight PWM GPIO 26 and LCD reset GPIO 27 on the ESP32-P4 Function EV Board, a common pairing. Verify these match your wiring. Other boards default to an unconfigured backlight GPIO (`-1`) and no reset GPIO; configure them as needed. Avoid pins used by flash, I2C, or other peripherals. Existing saved settings are retained when changing board selections.
     - No options will be added later
 
 3. Build and flash
@@ -51,7 +52,8 @@ Note: Board selection applies an sdkconfig overlay from `boards/sdkconfig.defaul
 - **ESP32-P4 chip revision support**: Configured to support all chip revisions (v1.0 and above) for maximum hardware compatibility
 - **Partition table**: 10MB factory app partition, 5MB SPIFFS storage (optimized for larger binaries)
 - **LVGL demos**: Only widgets demo enabled by default to reduce binary size (other demos can be enabled in menuconfig)
-- LVGL 9 via `espressif__esp_lvgl_port`
+- LVGL 9.5.0 via `espressif__esp_lvgl_port` (pinned because LVGL 9.6 warns about the current assert configuration, which fails builds treating warnings as errors)
+- LVGL draw-thread stack: set to 32768 in menuconfig to allocate 8192 bytes per worker on ESP32-P4. LVGL 9.5 divides this setting by the 4-byte `StackType_t`, while ESP-IDF expects bytes. Existing `sdkconfig` files may need this value updated under **LVGL configuration → Rendering Configuration → Stack size of draw thread in bytes**.
 - MIPI DSI panel bring-up path: create DSI bus → DBI IO → wrap DPI panel → register display with LVGL
 - I2C v2 API for touch and aux devices
 
@@ -82,10 +84,12 @@ Planned to be added incrementally as part-time development progresses.
 | RaspberyPi | [RPi 5" Touch Display V2][id3] | 720x1280 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
 | RaspberyPi | [RPi 7" Touch Display V2][id3] | 720x1280 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
 | Waveshare | [ESP32-P4-WIFI6-Touch-LCD-3.4C][id7] | 800x800 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
-| Amelin | [7" 1024x600 LCD T D][id4] | 1024x600 | DSI (2-lanes) | GT911 | In progress |
+| Amelin | [7" 1024x600 LCD T D][id4] | 1024x600 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
 | SeeedStudio | TBD | — | DSI | — | Planned |
 
 > *Default Resolution. Display orientation can be changed in the firmware.
+
+The Amelin display has been tested with the ESP32-P4 Function EV Board; other boards have not yet been tested with it.
 
 Contributions and test reports are welcome.
 
@@ -120,6 +124,8 @@ Enabling PPA typically makes list scrolling and screen transitions noticeably fa
 - Tomasz Witke: added support for Waveshare ESP32-P4-WIFI6-Touch-LCD-3.4C.
 
 ## Quick tips for troubleshooting
+
+If the ESP32-P4 intermittently faults at an address outside the firmware's executable range, try disabling **Component config → ESP PSRAM → Enable Executable in place (XiP) from PSRAM** in menuconfig and rebuild. This is disabled in the project defaults, but existing `sdkconfig` files retain their saved setting. It keeps code and read-only data in flash while retaining PSRAM for allocations; it can help isolate instruction-fetch or PSRAM corruption, but is not a confirmed fix. It may affect performance and code execution during flash operations.
 
 During bring-up across multiple DSI panels, configuration changes can occasionally leave the panel in an unresponsive state. If you flash the ESP32‑P4 with different DSI settings while the same panel remains connected, the panel might not reflect the new configuration. In that case:
 
