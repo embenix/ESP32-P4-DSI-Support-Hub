@@ -19,7 +19,7 @@ Modular, trim-to-fit panel support: choose your LCD and keep builds lean by remo
 ## Quick start
 
 1. Prerequisites
-    - **ESP-IDF v5.5.3+** or **v6.0** (P4 + MIPI DSI capable toolchain, tested with v5.5.3 and v6.0)
+    - **ESP-IDF v5.5.3+** or **v6.0** (P4 + MIPI DSI capable toolchain, tested with v5.5.3 and v6.1)
     - Python and Git installed
 
 > **Note for ESP-IDF v6.0 Users**: This project includes modified components in the `components/` directory to ensure compatibility with ESP-IDF v6.0's new color/display API. These will be automatically used during build. The patches use conditional compilation to maintain backward compatibility with ESP-IDF v5.5.3+. See `components/README.md` for details.
@@ -85,6 +85,7 @@ Planned to be added incrementally as part-time development progresses.
 | RaspberyPi | [RPi 7" Touch Display V2][id3] | 720x1280 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
 | Waveshare | [ESP32-P4-WIFI6-Touch-LCD-3.4C][id7] | 800x800 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
 | Amelin | [7" 1024x600 LCD T D][id4] | 1024x600 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
+| Elecrow | [5" 800x480 Touch Display][id8] | 800x480 | DSI (2-lanes) | FT5406 | :white_check_mark: Works |
 | SeeedStudio | TBD | — | DSI | — | Planned |
 
 > *Default Resolution. Display orientation can be changed in the firmware.
@@ -100,6 +101,7 @@ Contributions and test reports are welcome.
 [id4]: https://www.vip-lcd.com/7-Inch-LCD-Touch-Display-Screen-1024-600-LVDS-Interface-with-Touch-Panel-7-0-Inch-Lcd-Module-pd591986658.html
 [id5]: https://www.buydisplay.com/5-inch-720x1280-ips-tft-lcd-display-mipi-interface-ili9881-controller
 [id7]: https://www.waveshare.com/esp32-p4-wifi6-touch-lcd-3.4c.htm
+[id8]: https://www.elecrow.com/5-inch-dsi-display-ips-800-480-touch-screen-compatible-with-raspberry-pi-4b-3b-3b.html
 
 ## Incorporating into your own project
 
