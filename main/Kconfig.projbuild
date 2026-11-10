@@ -122,6 +122,13 @@ menu "Project Configuration"
                     Raspberry Pi 7inch Touch Display V1.1 (800x480) with touch.
                     Earlier version of the Raspberry Pi Touch Display.
 
+            config ELECROW_5INCH_DSI_TOUCHSCREEN
+                bool "Elecrow 5inch DSI Touch Display (800x480)"
+                help
+                    Elecrow 5-inch DSI IPS Display (800x480) with touch.
+                    Uses TC358762 bridge and FT5406 touch controller.
+                    https://www.elecrow.com/5-inch-dsi-display-ips-800-480-touch-screen-compatible-with-raspberry-pi-4b-3b-3b.html
+            
             config AMELIN_EK79007_7INCH_TOUCH_DISPLAY
                 bool "Amelin EK79007 7inch Touch Display (experimental)"
                 help
