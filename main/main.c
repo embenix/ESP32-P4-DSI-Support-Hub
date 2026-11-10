@@ -18,12 +18,12 @@ static const char *TAG = "DSI support hub";
 
  /**
  * @brief Application entry point
- * 
+ *
  */
 void app_main(void)
 {
     ESP_LOGI(TAG, "Starting DSI Support Hub");
-    
+
     // Initialize LVGL and LCD
     lvgl_port_cfg_t lvgl_port_cfg = ESP_LVGL_PORT_INIT_CONFIG();
     lvgl_port_cfg.task_stack = 12288;
@@ -43,7 +43,7 @@ void app_main(void)
 // #elif CONFIG_RPI_7INCH_TOUCH_DISPLAY_V1 == 1
 //         lv_display_set_rotation(display_get_handle(), LV_DISPLAY_ROTATION_180);
 #elif CONFIG_BUYDISPLAY_5INCH_ER_TFT050_10 == 1
-        lv_display_set_rotation(display_get_handle(), LV_DISPLAY_ROTATION_90); 
+        lv_display_set_rotation(display_get_handle(), LV_DISPLAY_ROTATION_90);
 #endif
 
         // Run a demo application
