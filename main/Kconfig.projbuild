@@ -128,6 +128,8 @@ menu "Project Configuration"
                     Amelin EK79007 7inch Touch Display (1024x600) with GT911 touch.
                     Commonly used with the ESP32-P4 Function EV Board.
                     Configure its GPIOs in the Amelin display settings.
+                    Product ID: AML070JGI50-07403L
+                    https://www.vip-lcd.com/7-Inch-LCD-Touch-Display-Screen-1024-600-LVDS-Interface-with-Touch-Panel-7-0-Inch-Lcd-Module-pd591986658.html
         endchoice                
 
         menu "Amelin display settings"
