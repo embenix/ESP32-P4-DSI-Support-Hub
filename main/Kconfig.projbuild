@@ -128,14 +128,42 @@ menu "Project Configuration"
                     Elecrow 5-inch DSI IPS Display (800x480) with touch.
                     Uses TC358762 bridge and FT5406 touch controller.
                     https://www.elecrow.com/5-inch-dsi-display-ips-800-480-touch-screen-compatible-with-raspberry-pi-4b-3b-3b.html
-
-            # config AMELIN_EK79007_7INCH_TOUCH_DISPLAY
-            #     bool "Amelin EK79007 7inch Touch Display"
-            #     help
-            #         Amelin EK79007 7inch Touch Display (1024x600) with touch.
-            #         Product ID: AML070JGI50-07403L
-            #         https://www.vip-lcd.com/7-Inch-LCD-Touch-Display-Screen-1024-600-LVDS-Interface-with-Touch-Panel-7-0-Inch-Lcd-Module-pd591986658.html
+            
+            config AMELIN_EK79007_7INCH_TOUCH_DISPLAY
+                bool "Amelin EK79007 7inch Touch Display (experimental)"
+                help
+                    Amelin EK79007 7inch Touch Display (1024x600) with GT911 touch.
+                    Commonly used with the ESP32-P4 Function EV Board.
+                    Configure its GPIOs in the Amelin display settings.
+                    Product ID: AML070JGI50-07403L
+                    https://www.vip-lcd.com/7-Inch-LCD-Touch-Display-Screen-1024-600-LVDS-Interface-with-Touch-Panel-7-0-Inch-Lcd-Module-pd591986658.html
         endchoice                
+
+        menu "Amelin display settings"
+            depends on AMELIN_EK79007_7INCH_TOUCH_DISPLAY
+
+            config AMELIN_BACKLIGHT_PWM_GPIO
+                int "Backlight PWM GPIO"
+                range -1 54
+                default 26 if ESPRESSIF_ESP32P4_FUNCTION_EV_BOARD
+                default -1
+                help
+                    GPIO connected to the display backlight PWM input.
+                    Defaults to GPIO 26 on the ESP32-P4 Function EV Board.
+                    On other boards, choose an available output-capable GPIO.
+                    -1 means unconfigured and initialization will fail.
+                    Avoid pins used by flash, I2C, or other devices.
+
+            config AMELIN_LCD_RESET_GPIO
+                int "LCD reset GPIO"
+                range -1 54
+                default 27 if ESPRESSIF_ESP32P4_FUNCTION_EV_BOARD
+                default -1
+                help
+                    GPIO connected to the LCD reset input. Defaults to GPIO 27
+                    on the ESP32-P4 Function EV Board. Use -1 if reset is not
+                    connected to a GPIO. Avoid pins used by other devices.
+        endmenu
 
         # config ESP_LCD_MIPI_DSI_LANE_BITRATE_MBPS
         # int "MIPI DSI lane bitrate (Mbps)"

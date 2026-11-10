@@ -8,7 +8,8 @@
 dependencies:
   idf: '>=5.5.3'
   lvgl/lvgl:
-    version: '>=9.5.0'
+    # LVGL 9.6 warns about the current assert configuration, failing -Werror builds.
+    version: '9.5.0'
     public: true
 
   # Note: esp_lvgl_port has a patched version in components/esp_lvgl_port for v6.0
@@ -19,8 +20,8 @@ dependencies:
   espressif/esp_lcd_touch_ft5x06: ^1.1.0
   espressif/esp_lcd_touch_gt911: ^1.2.0
 
-  esp_lcd_ek79007:
-    version: "^1.0.0"
+  espressif/esp_lcd_ek79007:
+    version: "^2.0.2"
     rules:
       - if: '$LCD_TYPE == "amelin_ek79007"'
       
