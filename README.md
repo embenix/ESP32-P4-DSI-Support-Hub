@@ -170,6 +170,8 @@ Below are a few photos from the project setup and output. Images are stored unde
 
 ![RPi 7" Touch Display v1.x](pictures/12.jpg)
 
+![Elecrow 5" 800x480 Touch Display](pictures/13_Nobby.jpg)
+
 ## License
 
 See `LICENSE` for details.
