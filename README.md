@@ -86,6 +86,7 @@ Planned to be added incrementally as part-time development progresses.
 | Waveshare | [ESP32-P4-WIFI6-Touch-LCD-3.4C][id7] | 800x800 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
 | Amelin | [7" 1024x600 LCD T D][id4] | 1024x600 | DSI (2-lanes) | GT911 | :white_check_mark: Works |
 | Elecrow | [5" 800x480 Touch Display][id8] | 800x480 | DSI (2-lanes) | FT5406 | :white_check_mark: Works |
+| BuyDisplay | [5" ER-TFTV050A3-1][id9] | 800x480 | DSI (1-lane) | FT5x06 | :white_check_mark: Works |
 | SeeedStudio | TBD | — | DSI | — | Planned |
 
 > *Default Resolution. Display orientation can be changed in the firmware.
@@ -102,6 +103,7 @@ Contributions and test reports are welcome.
 [id5]: https://www.buydisplay.com/5-inch-720x1280-ips-tft-lcd-display-mipi-interface-ili9881-controller
 [id7]: https://www.waveshare.com/esp32-p4-wifi6-touch-lcd-3.4c.htm
 [id8]: https://www.elecrow.com/5-inch-dsi-display-ips-800-480-touch-screen-compatible-with-raspberry-pi-4b-3b-3b.html
+[id9]: https://www.buydisplay.com/5-inch-capacitive-touch-ips-display-800x480-mipi-dsi-interface-for-raspberry-pi
 
 ## Incorporating into your own project
 
@@ -171,6 +173,8 @@ Below are a few photos from the project setup and output. Images are stored unde
 ![RPi 7" Touch Display v1.x](pictures/12.jpg)
 
 ![Elecrow 5" 800x480 Touch Display](pictures/13_Nobby.jpg)
+
+![BuyDisplay 5" ER-TFTV050A3-1 800x480 Touch Display](pictures/14_buydisplay.jpg)
 
 ## License
 

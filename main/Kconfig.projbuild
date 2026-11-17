@@ -128,7 +128,14 @@ menu "Project Configuration"
                     Elecrow 5-inch DSI IPS Display (800x480) with touch.
                     Uses TC358762 bridge and FT5406 touch controller.
                     https://www.elecrow.com/5-inch-dsi-display-ips-800-480-touch-screen-compatible-with-raspberry-pi-4b-3b-3b.html
-            
+
+            config BUYDISPLAY_5INCH_ER_TFTV050A3_1
+                bool "BuyDisplay 5inch ER-TFTV050A3-1 DSI Touch Display (800x480)"
+                help
+                    BuyDisplay ER-TFTV050A3-1 5-inch DSI IPS display (800x480) with touch.
+                    Uses TC358762-compatible bridge and FT5406-compatible touch controller.
+                    https://www.buydisplay.com/5-inch-800x480-tft-display-capacitive-touch-panel-mipi-dsi-interface
+
             config AMELIN_EK79007_7INCH_TOUCH_DISPLAY
                 bool "Amelin EK79007 7inch Touch Display (experimental)"
                 help
